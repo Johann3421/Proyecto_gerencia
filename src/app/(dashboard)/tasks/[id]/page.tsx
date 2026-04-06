@@ -402,6 +402,29 @@ export default function TaskDetailPage() {
                   </button>
                 </>
               )}
+              {task.status === "AWAITING_REVIEW" && can("tasks", "approve") && (
+                <>
+                  <button
+                    onClick={() => handleStatusChange("APPROVED")}
+                    disabled={updateStatus.isPending}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "10px 16px", borderRadius: 8, background: "var(--ok)", color: "#fff", fontSize: 13, fontWeight: 600, border: "none", cursor: updateStatus.isPending ? "not-allowed" : "pointer", opacity: updateStatus.isPending ? 0.7 : 1 }}
+                  >
+                    <CheckCircle2 size={16} /> Aprobar cumplimiento
+                  </button>
+                  <button
+                    onClick={() => handleStatusChange("REJECTED")}
+                    disabled={updateStatus.isPending}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "10px 16px", borderRadius: 8, background: "var(--bad)", color: "#fff", fontSize: 13, fontWeight: 600, border: "none", cursor: updateStatus.isPending ? "not-allowed" : "pointer", opacity: updateStatus.isPending ? 0.7 : 1 }}
+                  >
+                    <XCircle size={16} /> Rechazar (Requiere cambios)
+                  </button>
+                </>
+              )}
+              {task.status === "AWAITING_REVIEW" && !can("tasks", "approve") && (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "10px 16px", borderRadius: 8, background: "var(--surface-alt)", border: "1px dashed var(--border)", color: "var(--text-3)", fontSize: 13, fontWeight: 500 }}>
+                  <Clock size={16} /> Esperando revisión gerencial
+                </div>
+              )}
               {task.status === "APPROVED" && (
                 <button
                   onClick={() => handleStatusChange("COMPLETED")}
