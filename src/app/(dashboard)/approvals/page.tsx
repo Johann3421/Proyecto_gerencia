@@ -8,7 +8,7 @@ import { formatRelativeDate } from "@/lib/utils";
 // Make sure to reuse the compact list for these as well
 function CompactTaskList({ tasks }: { tasks: any[] }) {
   if (tasks.length === 0) return (
-    <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--r)", padding: 24, textAlign: "center", fontSize: 13, color: "var(--text-3)" }}>
+    <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--r)", padding: 32, textAlign: "center", fontSize: 14, color: "var(--text-3)" }}>
       No hay tareas pendientes de aprobación.
     </div>
   );
@@ -55,51 +55,51 @@ function CompactTaskList({ tasks }: { tasks: any[] }) {
 
         return (
           <Link key={task.id} href={`/tasks/${task.id}`} style={{
-            display: "flex", alignItems: "center", padding: highlighted ? "0 14px 0 12px" : "0 14px",
-            minHeight: 44, borderBottom: "1px solid var(--border-light)", textDecoration: "none",
+            display: "flex", alignItems: "center", padding: highlighted ? "0 20px 0 16px" : "0 20px",
+            minHeight: 52, borderBottom: "1px solid var(--border-light)", textDecoration: "none",
             background: highlighted ? "#fffafa" : "transparent",
-            borderLeft: highlighted ? "2px solid var(--bad)" : "none",
+            borderLeft: highlighted ? "4px solid var(--bad)" : "none",
             transition: "background 0.1s"
           }}
           onMouseEnter={e => { if(!highlighted) e.currentTarget.style.background = "var(--surface-alt)" }}
           onMouseLeave={e => { if(!highlighted) e.currentTarget.style.background = "transparent" }}
           >
-            <div style={{ width: 14, height: 14, borderRadius: 3, border: "1.5px solid var(--text-4)", flexShrink: 0, marginRight: 10, display: "flex", alignItems: "center", justifyContent: "center" }} />
+            <div style={{ width: 16, height: 16, borderRadius: 4, border: "1.5px solid var(--text-4)", flexShrink: 0, marginRight: 12, display: "flex", alignItems: "center", justifyContent: "center" }} />
             
-            <div style={{ width: 6, height: 6, borderRadius: "50%", background: prioColor, flexShrink: 0, marginRight: 8 }} />
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: prioColor, flexShrink: 0, marginRight: 10 }} />
             
-            <span style={{ fontSize: 13, color: "var(--text-1)", flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontWeight: 400 }}>
+            <span style={{ fontSize: 14, color: "var(--text-1)", flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontWeight: 500 }}>
               {task.title}
             </span>
             
             {task.area && (
-              <span style={{ fontSize: 11, fontWeight: 500, padding: "2px 8px", borderRadius: 4, marginLeft: 8, flexShrink: 0, background: areaBg, color: areaColor }}>
+              <span style={{ fontSize: 12, fontWeight: 500, padding: "2px 8px", borderRadius: 4, marginLeft: 10, flexShrink: 0, background: areaBg, color: areaColor }}>
                 {task.area.name}
               </span>
             )}
             
-            <span style={{ fontSize: 11, fontWeight: 500, padding: "2px 8px", borderRadius: 4, marginLeft: 6, flexShrink: 0, background: statBg, color: statColor }}>
+            <span style={{ fontSize: 12, fontWeight: 500, padding: "2px 8px", borderRadius: 4, marginLeft: 8, flexShrink: 0, background: statBg, color: statColor }}>
               {statLabel}
             </span>
 
-            <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10, paddingLeft: 12 }}>
+            <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12, paddingLeft: 16 }}>
               {task.assignedTo ? (
-                <div style={{ width: 20, height: 20, borderRadius: "50%", background: areaColor, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 700 }}>
+                <div style={{ width: 24, height: 24, borderRadius: "50%", background: areaColor, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700 }}>
                   {task.assignedTo.name.charAt(0)}
                 </div>
               ) : (
-                <div style={{ width: 20, height: 20, borderRadius: "50%", border: "1px dashed var(--text-4)" }} />
+                <div style={{ width: 24, height: 24, borderRadius: "50%", border: "1px dashed var(--text-4)" }} />
               )}
               
               {dateText && (
-                <span style={{ fontSize: 11, color: dateColor, fontWeight: dateColor === "var(--text-3)" ? 400 : 500, width: 65, textAlign: "right" }}>
+                <span style={{ fontSize: 12, color: dateColor, fontWeight: dateColor === "var(--text-3)" ? 400 : 500, width: 70, textAlign: "right" }}>
                   {dateText}
                 </span>
               )}
               
               {(task._count?.comments > 0) && (
-                <div style={{ display: "flex", alignItems: "center", gap: 3, color: "var(--text-3)", fontSize: 11, width: 30, justifyContent: "flex-end" }}>
-                  <MessageSquare size={11} /> {task._count.comments}
+                <div style={{ display: "flex", alignItems: "center", gap: 4, color: "var(--text-3)", fontSize: 12, width: 34, justifyContent: "flex-end" }}>
+                  <MessageSquare size={13} /> {task._count.comments}
                 </div>
               )}
             </div>

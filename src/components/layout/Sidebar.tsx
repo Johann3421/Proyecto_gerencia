@@ -134,7 +134,7 @@ export function Sidebar() {
               >
                 N
               </div>
-              <span style={{ fontSize: 13, fontWeight: 600, color: "#fff", letterSpacing: "0.03em" }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-1)", letterSpacing: "0.03em" }}>
                 NEXUS
               </span>
             </Link>
@@ -174,7 +174,7 @@ export function Sidebar() {
                   </div>
                 )}
                 {group !== "MAIN" && sidebarCollapsed && (
-                  <div style={{ margin: "4px 8px", borderTop: "1px solid rgba(255,255,255,0.1)" }} />
+                  <div style={{ margin: "4px 8px", borderTop: "1px solid var(--border-light)" }} />
                 )}
 
                 {/* Items */}
@@ -201,8 +201,8 @@ export function Sidebar() {
                       }}
                       onMouseEnter={(e) => {
                         if (!isActive) {
-                          e.currentTarget.style.color = "#fff";
-                          e.currentTarget.style.background = "rgba(255,255,255,0.05)";
+                          e.currentTarget.style.color = "var(--text-1)";
+                          e.currentTarget.style.background = "var(--sidebar-active-bg)";
                         }
                       }}
                       onMouseLeave={(e) => {

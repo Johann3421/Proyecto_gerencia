@@ -31,31 +31,39 @@ export default function SettingsPage() {
   const role = session?.user?.role as RoleType | undefined;
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <div>
-        <h1 className="text-xl font-bold text-zinc-900 dark:text-white">
-          Configuración
-        </h1>
-        <p className="text-sm text-zinc-500">Tu perfil y preferencias</p>
+    <div style={{ display: "flex", flexDirection: "column", maxWidth: 640 }}>
+      <div style={{ 
+        fontSize: 13, fontWeight: 600, color: "var(--text-2)",
+        letterSpacing: "0.2px", textTransform: "uppercase", marginBottom: 24, marginTop: 24 
+      }}>
+        Configuración del Sistema
       </div>
 
       {/* Profile Card */}
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
-        <h2 className="mb-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-          Perfil
+      <div style={{
+        background: "var(--surface)", border: "1px solid var(--border)",
+        borderRadius: "var(--r)", padding: 32, marginBottom: 24
+      }}>
+        <h2 style={{ fontSize: 15, fontWeight: 600, color: "var(--text-1)", margin: "0 0 24px 0" }}>
+          Perfil de Usuario
         </h2>
 
         {/* Avatar */}
-        <div className="mb-6 flex items-center gap-4">
-          <div className="relative">
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 32 }}>
+          <div style={{ position: "relative" }}>
             {me?.avatar ? (
               <img
                 src={me.avatar}
                 alt={me.name}
-                className="h-16 w-16 rounded-full object-cover"
+                style={{ height: 64, width: 64, borderRadius: "50%", objectFit: "cover", border: "1px solid var(--border)" }}
               />
             ) : (
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-indigo-100 text-xl font-bold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
+              <div style={{
+                display: "flex", alignItems: "center", justifyContent: "center",
+                height: 64, width: 64, borderRadius: "50%",
+                background: "var(--accent)", color: "#fff",
+                fontSize: 20, fontWeight: 700
+              }}>
                 {(me?.name ?? session?.user?.name ?? "U")
                   .split(" ")
                   .map((n: string) => n[0])
@@ -66,112 +74,143 @@ export default function SettingsPage() {
             )}
           </div>
           <div>
-            <p className="font-medium text-zinc-900 dark:text-white">
+            <p style={{ fontSize: 16, fontWeight: 600, color: "var(--text-1)", margin: "0 0 4px 0" }}>
               {me?.name ?? session?.user?.name}
             </p>
-            <p className="text-sm text-zinc-500">
+            <p style={{ fontSize: 13, color: "var(--text-3)", margin: "0 0 8px 0" }}>
               {me?.email ?? session?.user?.email}
             </p>
             {role && (
-              <span className="mt-1 inline-block rounded-full bg-indigo-100 px-2.5 py-0.5 text-[10px] font-semibold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
+              <span style={{
+                padding: "2px 10px", borderRadius: 4, fontSize: 11, fontWeight: 600,
+                background: "var(--surface-alt)", color: "var(--text-2)", border: "1px solid var(--border)"
+              }}>
                 {ROLE_LABELS[role]}
               </span>
             )}
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            <label style={{ display: "block", marginBottom: 6, fontSize: 13, fontWeight: 500, color: "var(--text-2)" }}>
               Nombre completo
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="h-10 w-full rounded-xl border border-zinc-200 bg-white px-4 text-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-zinc-700 dark:bg-zinc-900"
+              style={{
+                width: "100%", height: 40, padding: "0 12px",
+                fontSize: 14, background: "var(--surface)", border: "1px solid var(--border)",
+                borderRadius: "var(--r)", outline: "none", color: "var(--text-1)",
+                transition: "border-color 0.15s"
+              }}
+              onFocus={e => { e.currentTarget.style.borderColor = "var(--accent)" }}
+              onBlur={e => { e.currentTarget.style.borderColor = "var(--border)" }}
             />
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              Email
+            <label style={{ display: "block", marginBottom: 6, fontSize: 13, fontWeight: 500, color: "var(--text-2)" }}>
+              Email Institucional
             </label>
             <input
               type="email"
               value={me?.email ?? session?.user?.email ?? ""}
               disabled
-              className="h-10 w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800"
+              style={{
+                width: "100%", height: 40, padding: "0 12px",
+                fontSize: 14, background: "var(--surface-alt)", border: "1px solid var(--border)",
+                borderRadius: "var(--r)", outline: "none", color: "var(--text-3)",
+                opacity: 0.8, cursor: "not-allowed"
+              }}
             />
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              Teléfono
+            <label style={{ display: "block", marginBottom: 6, fontSize: 13, fontWeight: 500, color: "var(--text-2)" }}>
+              Teléfono (Opcional)
             </label>
             <input
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="+51 999 999 999"
-              className="h-10 w-full rounded-xl border border-zinc-200 bg-white px-4 text-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-zinc-700 dark:bg-zinc-900"
+              style={{
+                width: "100%", height: 40, padding: "0 12px",
+                fontSize: 14, background: "var(--surface)", border: "1px solid var(--border)",
+                borderRadius: "var(--r)", outline: "none", color: "var(--text-1)",
+                transition: "border-color 0.15s"
+              }}
+              onFocus={e => { e.currentTarget.style.borderColor = "var(--accent)" }}
+              onBlur={e => { e.currentTarget.style.borderColor = "var(--border)" }}
             />
           </div>
 
           {updateProfile.error && (
-            <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-600 dark:border-red-900 dark:bg-red-950/30">
+            <div style={{ padding: "10px 14px", borderRadius: 6, fontSize: 13, background: "#fef2f2", color: "var(--bad)", border: "1px solid #fca5a5" }}>
               {updateProfile.error.message}
             </div>
           )}
 
           {updateProfile.isSuccess && (
-            <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-600 dark:border-emerald-900 dark:bg-emerald-950/30">
-              Perfil actualizado correctamente
+            <div style={{ padding: "10px 14px", borderRadius: 6, fontSize: 13, background: "#f0fdf4", color: "var(--ok)", border: "1px solid #86efac" }}>
+              Perfil actualizado correctamente.
             </div>
           )}
 
-          <button
-            type="submit"
-            disabled={updateProfile.isPending}
-            className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-700 disabled:opacity-50"
-          >
-            {updateProfile.isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Save className="h-4 w-4" />
-            )}
-            Guardar cambios
-          </button>
+          <div style={{ display: "flex", justifyContent: "flex-start", marginTop: 8 }}>
+            <button
+              type="submit"
+              disabled={updateProfile.isPending}
+              style={{
+                display: "flex", alignItems: "center", gap: 8, padding: "0 20px", height: 40,
+                fontSize: 14, fontWeight: 500, color: "#fff", background: "var(--text-1)",
+                border: "none", borderRadius: "var(--r)", cursor: updateProfile.isPending ? "not-allowed" : "pointer",
+                opacity: updateProfile.isPending ? 0.7 : 1
+              }}
+            >
+              {updateProfile.isPending ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+              Guardar cambios
+            </button>
+          </div>
         </form>
       </div>
 
       {/* Info card */}
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
-        <h2 className="mb-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-          Información del sistema
+      <div style={{
+        background: "var(--surface)", border: "1px solid var(--border)",
+        borderRadius: "var(--r)", padding: 32
+      }}>
+        <h2 style={{ fontSize: 15, fontWeight: 600, color: "var(--text-1)", margin: "0 0 20px 0" }}>
+          Información Operativa
         </h2>
-        <div className="space-y-3 text-sm">
-          <div className="flex justify-between">
-            <span className="text-zinc-500">Área</span>
-            <span className="font-medium text-zinc-700 dark:text-zinc-300">
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid var(--border-light)", paddingBottom: 16 }}>
+            <span style={{ fontSize: 14, color: "var(--text-3)" }}>Área Operativa</span>
+            <span style={{ fontSize: 14, fontWeight: 500, color: "var(--text-1)" }}>
               {me?.area?.name ?? "—"}
             </span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-zinc-500">Departamento</span>
-            <span className="font-medium text-zinc-700 dark:text-zinc-300">
+          <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid var(--border-light)", paddingBottom: 16 }}>
+            <span style={{ fontSize: 14, color: "var(--text-3)" }}>Departamento</span>
+            <span style={{ fontSize: 14, fontWeight: 500, color: "var(--text-1)" }}>
               {me?.department?.name ?? "—"}
             </span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-zinc-500">Rol</span>
-            <span className="font-medium text-zinc-700 dark:text-zinc-300">
+          <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid var(--border-light)", paddingBottom: 16 }}>
+            <span style={{ fontSize: 14, color: "var(--text-3)" }}>Nivel de Acceso</span>
+            <span style={{ fontSize: 14, fontWeight: 500, color: "var(--text-1)" }}>
               {role ? ROLE_LABELS[role] : "—"}
             </span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-zinc-500">Estado</span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400">
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <span style={{ fontSize: 14, color: "var(--text-3)" }}>Estado de Cuenta</span>
+            <span style={{
+              padding: "2px 10px", borderRadius: 4, fontSize: 12, fontWeight: 600,
+              background: "#f0fdf4", color: "var(--ok)", border: "1px solid #bbf7d0"
+            }}>
               Activo
             </span>
           </div>

@@ -53,27 +53,28 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-zinc-900 dark:text-white">
-            Reportes
-          </h1>
-          <p className="text-sm text-zinc-500">
-            Métricas y análisis operacional
-          </p>
+    <div style={{ display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 24, marginTop: 24 }}>
+        <div style={{ 
+          fontSize: 13, fontWeight: 600, color: "var(--text-2)",
+          letterSpacing: "0.2px", textTransform: "uppercase" 
+        }}>
+          Reporte General
         </div>
+        
         {/* Date range selector */}
-        <div className="flex rounded-lg border border-zinc-200 dark:border-zinc-700">
-          {(["week", "month", "quarter"] as const).map((r) => (
+        <div style={{ display: "flex", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--r)", overflow: "hidden" }}>
+          {(["week", "month", "quarter"] as const).map((r, i) => (
             <button
               key={r}
               onClick={() => setDateRange(r)}
-              className={`px-3 py-1.5 text-xs font-medium transition-colors first:rounded-l-lg last:rounded-r-lg ${
-                dateRange === r
-                  ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400"
-                  : "text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800"
-              }`}
+              style={{
+                padding: "6px 14px", fontSize: 13, cursor: "pointer", fontWeight: 500,
+                background: dateRange === r ? "var(--surface-alt)" : "transparent",
+                color: dateRange === r ? "var(--accent)" : "var(--text-3)",
+                border: "none", borderLeft: i > 0 ? "1px solid var(--border-light)" : "none",
+                transition: "all 0.1s"
+              }}
             >
               {r === "week" ? "Semana" : r === "month" ? "Mes" : "Trimestre"}
             </button>
@@ -81,76 +82,73 @@ export default function ReportsPage() {
         </div>
       </div>
 
-      {/* Global KPIs */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
-          <BarChart3 className="mb-2 h-5 w-5 text-indigo-500" />
-          <div className="text-2xl font-bold text-zinc-900 dark:text-white">
+      {/* Global KPIs via StatStrip layout equivalent */}
+      <div style={{
+        background: "var(--surface)", border: "1px solid var(--border)",
+        borderRadius: "var(--r)", display: "flex", overflow: "hidden", marginBottom: 24
+      }}>
+        <div style={{ flex: 1, padding: "20px 24px", borderRight: "1px solid var(--border-light)" }}>
+          <div style={{ fontSize: 13, fontWeight: 500, color: "var(--text-3)", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+            <BarChart3 size={16} color="var(--accent)" /> Total tareas
+          </div>
+          <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-0.5px", lineHeight: 1, color: "var(--text-1)" }}>
             {totalTasks}
           </div>
-          <div className="text-xs text-zinc-500">Total tareas</div>
         </div>
-        <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
-          <CheckCircle2 className="mb-2 h-5 w-5 text-emerald-500" />
-          <div className="text-2xl font-bold text-emerald-600">
+        <div style={{ flex: 1, padding: "20px 24px", borderRight: "1px solid var(--border-light)" }}>
+          <div style={{ fontSize: 13, fontWeight: 500, color: "var(--text-3)", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+            <CheckCircle2 size={16} color="var(--ok)" /> Tasa completado
+          </div>
+          <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-0.5px", lineHeight: 1, color: "var(--ok)" }}>
             {globalRate}%
           </div>
-          <div className="text-xs text-zinc-500">Tasa completado</div>
         </div>
-        <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
-          <AlertTriangle className="mb-2 h-5 w-5 text-red-500" />
-          <div className="text-2xl font-bold text-red-600">{totalOverdue}</div>
-          <div className="text-xs text-zinc-500">Tareas vencidas</div>
+        <div style={{ flex: 1, padding: "20px 24px", borderRight: "1px solid var(--border-light)" }}>
+          <div style={{ fontSize: 13, fontWeight: 500, color: "var(--text-3)", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+            <AlertTriangle size={16} color="var(--bad)" /> Tareas vencidas
+          </div>
+          <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-0.5px", lineHeight: 1, color: "var(--bad)" }}>
+            {totalOverdue}
+          </div>
         </div>
-        <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
-          <Clock className="mb-2 h-5 w-5 text-amber-500" />
-          <div className="text-2xl font-bold text-amber-600">
+        <div style={{ flex: 1, padding: "20px 24px" }}>
+          <div style={{ fontSize: 13, fontWeight: 500, color: "var(--text-3)", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+            <Clock size={16} color="var(--warn)" /> En progreso
+          </div>
+          <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-0.5px", lineHeight: 1, color: "var(--warn)" }}>
             {completionRate?.inProgress ?? "—"}
           </div>
-            <div className="text-xs text-zinc-500">En progreso</div>
         </div>
       </div>
 
       {/* Area comparison */}
-      <div className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950">
-        <h2 className="mb-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-          Rendimiento por Área
+      <div style={{
+        background: "var(--surface)", border: "1px solid var(--border)",
+        borderRadius: "var(--r)", padding: 24, marginBottom: 24
+      }}>
+        <h2 style={{ fontSize: 14, fontWeight: 600, color: "var(--text-1)", margin: "0 0 20px 0" }}>
+          Rendimiento General por Área
         </h2>
-        <div className="space-y-3">
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {kpis?.map((area) => {
-            const rate =
-              area.totalTasks > 0
-                ? Math.round((area.completed / area.totalTasks) * 100)
-                : 0;
+            const rate = area.totalTasks > 0 ? Math.round((area.completed / area.totalTasks) * 100) : 0;
+            const barColor = rate >= 80 ? "var(--ok)" : rate >= 50 ? "var(--warn)" : "var(--bad)";
             return (
               <div key={area.id}>
-                <div className="mb-1 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm">{area.area?.icon ?? "🏢"}</span>
-                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 14 }}>{area.area?.icon ?? "🏢"}</span>
+                    <span style={{ fontSize: 14, fontWeight: 500, color: "var(--text-1)" }}>
                       {area.area?.name}
                     </span>
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-zinc-500">
-                    <span>
-                      {area.completed}/{area.totalTasks}
-                    </span>
-                    <span className="font-semibold text-zinc-700 dark:text-zinc-300">
-                      {rate}%
-                    </span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 13, color: "var(--text-3)" }}>
+                    <span>{area.completed}/{area.totalTasks}</span>
+                    <span style={{ fontWeight: 600, color: "var(--text-1)" }}>{rate}%</span>
                   </div>
                 </div>
-                <div className="h-2.5 rounded-full bg-zinc-100 dark:bg-zinc-800">
-                  <div
-                    className={`h-2.5 rounded-full transition-all ${
-                      rate >= 80
-                        ? "bg-emerald-500"
-                        : rate >= 50
-                        ? "bg-amber-500"
-                        : "bg-red-500"
-                    }`}
-                    style={{ width: `${rate}%` }}
-                  />
+                <div style={{ height: 6, borderRadius: 3, background: "var(--surface-alt)", overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${rate}%`, background: barColor, transition: "width 0.3s" }} />
                 </div>
               </div>
             );
@@ -158,68 +156,50 @@ export default function ReportsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
         {/* Overdue by area */}
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950">
-          <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-            <AlertTriangle className="h-4 w-4 text-red-500" />
-            Vencidas por Área
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--r)", padding: 24 }}>
+          <h2 style={{ fontSize: 14, fontWeight: 600, color: "var(--text-1)", margin: "0 0 16px 0", display: "flex", alignItems: "center", gap: 8 }}>
+            <AlertTriangle size={16} color="var(--bad)" /> Vencidas por Área
           </h2>
           {overdue && overdue.length > 0 ? (
-            <div className="space-y-2">
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {overdue.map((item) => (
-                <div
-                  key={item.areaId}
-                  className="flex items-center justify-between rounded-lg bg-zinc-50 p-3 dark:bg-zinc-900"
-                >
-                  <span className="text-sm text-zinc-700 dark:text-zinc-300">
-                    {item.name}
-                  </span>
-                  <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-bold text-red-600 dark:bg-red-950 dark:text-red-400">
-                    {item.overdueCount}
-                  </span>
+                <div key={item.areaId} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: "var(--surface-alt)", borderRadius: 6 }}>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: "var(--text-1)" }}>{item.name}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "var(--bad)" }}>{item.overdueCount}</span>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-zinc-400">Sin tareas vencidas</p>
+            <p style={{ fontSize: 13, color: "var(--text-3)", textAlign: "center", padding: 20 }}>Sin tareas vencidas</p>
           )}
         </div>
 
         {/* Top productivity */}
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950">
-          <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-            <TrendingUp className="h-4 w-4 text-emerald-500" />
-            Top Productividad
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--r)", padding: 24 }}>
+          <h2 style={{ fontSize: 14, fontWeight: 600, color: "var(--text-1)", margin: "0 0 16px 0", display: "flex", alignItems: "center", gap: 8 }}>
+            <TrendingUp size={16} color="var(--ok)" /> Top Productividad
           </h2>
           {productivity && productivity.length > 0 ? (
-            <div className="space-y-2">
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {productivity.map((user, i) => (
-                <div
-                  key={user.userId}
-                  className="flex items-center justify-between rounded-lg bg-zinc-50 p-3 dark:bg-zinc-900"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-100 text-[10px] font-bold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
+                <div key={user.userId} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: "var(--surface-alt)", borderRadius: 6 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ width: 22, height: 22, borderRadius: "50%", background: "var(--surface)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "var(--text-1)" }}>
                       {i + 1}
                     </span>
-                    <span className="text-sm text-zinc-700 dark:text-zinc-300">
-                      {user.name}
-                    </span>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: "var(--text-1)" }}>{user.name}</span>
                   </div>
-                  <div className="text-right">
-                    <span className="text-sm font-bold text-zinc-900 dark:text-white">
-                      {user.completedTasks}
-                    </span>
-                    <span className="ml-1 text-[10px] text-zinc-400">
-                      completadas
-                    </span>
+                  <div style={{ textAlign: "right" }}>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: "var(--text-1)" }}>{user.completedTasks}</span>
+                    <span style={{ fontSize: 11, color: "var(--text-3)", marginLeft: 4 }}>completadas</span>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-zinc-400">Sin datos disponibles</p>
+            <p style={{ fontSize: 13, color: "var(--text-3)", textAlign: "center", padding: 20 }}>Sin datos disponibles</p>
           )}
         </div>
       </div>

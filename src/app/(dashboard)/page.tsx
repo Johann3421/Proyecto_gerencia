@@ -41,8 +41,8 @@ export default function DashboardPage() {
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <div style={{
-      fontSize: 11, fontWeight: 500, color: "var(--text-3)",
-      letterSpacing: "0.4px", textTransform: "uppercase", marginBottom: 8, marginTop: 24
+      fontSize: 13, fontWeight: 600, color: "var(--text-2)",
+      letterSpacing: "0.2px", textTransform: "uppercase", marginBottom: 12, marginTop: 32
     }}>
       {children}
     </div>
@@ -61,14 +61,14 @@ function StatStrip({ stats }: {
         const Icon = stat.icon;
         return (
           <div key={i} style={{
-            flex: 1, padding: "14px 18px",
+            flex: 1, padding: "20px 24px",
             borderRight: i < stats.length - 1 ? "1px solid var(--border-light)" : "none"
           }}>
-            <div style={{ fontSize: 11, color: "var(--text-3)", marginBottom: 3, display: "flex", alignItems: "center", gap: 5 }}>
-              <Icon size={12} color={stat.iconColor ?? stat.color} />
+            <div style={{ fontSize: 13, fontWeight: 500, color: "var(--text-3)", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+              <Icon size={16} color={stat.iconColor ?? stat.color} />
               {stat.label}
             </div>
-            <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.5px", lineHeight: 1, color: stat.color }}>
+            <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-0.5px", lineHeight: 1, color: stat.color }}>
               {stat.value}
             </div>
           </div>
@@ -80,7 +80,7 @@ function StatStrip({ stats }: {
 
 function CompactTaskList({ tasks, limit = 5 }: { tasks: any[], limit?: number }) {
   if (tasks.length === 0) return (
-    <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--r)", padding: 24, textAlign: "center", fontSize: 13, color: "var(--text-3)" }}>
+    <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--r)", padding: 32, textAlign: "center", fontSize: 14, color: "var(--text-3)" }}>
       No hay tareas para mostrar.
     </div>
   );
@@ -136,53 +136,53 @@ function CompactTaskList({ tasks, limit = 5 }: { tasks: any[], limit?: number })
 
         return (
           <Link key={task.id} href={`/tasks/${task.id}`} style={{
-            display: "flex", alignItems: "center", padding: highlighted ? "0 14px 0 12px" : "0 14px",
-            minHeight: 44, borderBottom: "1px solid var(--border-light)", textDecoration: "none",
+            display: "flex", alignItems: "center", padding: highlighted ? "0 20px 0 16px" : "0 20px",
+            minHeight: 52, borderBottom: "1px solid var(--border-light)", textDecoration: "none",
             background: highlighted ? "#fffafa" : "transparent",
-            borderLeft: highlighted ? "2px solid var(--bad)" : "none",
+            borderLeft: highlighted ? "4px solid var(--bad)" : "none",
             transition: "background 0.1s"
           }}
           onMouseEnter={e => { if(!highlighted) e.currentTarget.style.background = "var(--surface-alt)" }}
           onMouseLeave={e => { if(!highlighted) e.currentTarget.style.background = "transparent" }}
           >
-            <div style={{ width: 14, height: 14, borderRadius: 3, border: "1.5px solid var(--text-4)", flexShrink: 0, marginRight: 10, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              {["COMPLETED", "APPROVED"].includes(task.status) && <Check size={10} color="var(--text-3)" />}
+            <div style={{ width: 16, height: 16, borderRadius: 4, border: "1.5px solid var(--text-4)", flexShrink: 0, marginRight: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {["COMPLETED", "APPROVED"].includes(task.status) && <Check size={12} color="var(--text-3)" />}
             </div>
             
-            <div style={{ width: 6, height: 6, borderRadius: "50%", background: prioColor, flexShrink: 0, marginRight: 8 }} />
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: prioColor, flexShrink: 0, marginRight: 10 }} />
             
-            <span style={{ fontSize: 13, color: "var(--text-1)", flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontWeight: 400 }}>
+            <span style={{ fontSize: 14, color: "var(--text-1)", flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontWeight: 500 }}>
               {task.title}
             </span>
             
             {task.area && (
-              <span style={{ fontSize: 11, fontWeight: 500, padding: "2px 8px", borderRadius: 4, marginLeft: 8, flexShrink: 0, background: areaBg, color: areaColor }}>
+              <span style={{ fontSize: 12, fontWeight: 500, padding: "2px 8px", borderRadius: 4, marginLeft: 10, flexShrink: 0, background: areaBg, color: areaColor }}>
                 {task.area.name}
               </span>
             )}
             
-            <span style={{ fontSize: 11, fontWeight: 500, padding: "2px 8px", borderRadius: 4, marginLeft: 6, flexShrink: 0, background: statBg, color: statColor }}>
+            <span style={{ fontSize: 12, fontWeight: 500, padding: "2px 8px", borderRadius: 4, marginLeft: 8, flexShrink: 0, background: statBg, color: statColor }}>
               {statLabel}
             </span>
 
-            <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10, paddingLeft: 12 }}>
+            <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12, paddingLeft: 16 }}>
               {task.assignedTo ? (
-                <div style={{ width: 20, height: 20, borderRadius: "50%", background: areaColor, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 700 }}>
+                <div style={{ width: 24, height: 24, borderRadius: "50%", background: areaColor, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700 }}>
                   {task.assignedTo.name.charAt(0)}
                 </div>
               ) : (
-                <div style={{ width: 20, height: 20, borderRadius: "50%", border: "1px dashed var(--text-4)" }} />
+                <div style={{ width: 24, height: 24, borderRadius: "50%", border: "1px dashed var(--text-4)" }} />
               )}
               
               {dateText && (
-                <span style={{ fontSize: 11, color: dateColor, fontWeight: dateColor === "var(--text-3)" ? 400 : 500, width: 65, textAlign: "right" }}>
+                <span style={{ fontSize: 12, color: dateColor, fontWeight: dateColor === "var(--text-3)" ? 400 : 500, width: 70, textAlign: "right" }}>
                   {dateText}
                 </span>
               )}
               
               {(task._count?.comments > 0) && (
-                <div style={{ display: "flex", alignItems: "center", gap: 3, color: "var(--text-3)", fontSize: 11, width: 30, justifyContent: "flex-end" }}>
-                  <MessageSquare size={11} /> {task._count.comments}
+                <div style={{ display: "flex", alignItems: "center", gap: 4, color: "var(--text-3)", fontSize: 12, width: 34, justifyContent: "flex-end" }}>
+                  <MessageSquare size={13} /> {task._count.comments}
                 </div>
               )}
             </div>
@@ -205,7 +205,7 @@ function AreaHealthTable({ areas }: { areas: any[] }) {
   return (
     <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--r)", overflow: "hidden" }}>
       {/* Header */}
-      <div style={{ display: "grid", gridTemplateColumns: "180px 1fr 54px 62px 60px", padding: "8px 14px", background: "var(--surface-alt)", borderBottom: "1px solid var(--border-light)", fontSize: 10.5, fontWeight: 500, color: "var(--text-3)", letterSpacing: "0.3px", textTransform: "uppercase" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "220px 1fr 64px 72px 70px", padding: "12px 20px", background: "var(--surface-alt)", borderBottom: "1px solid var(--border-light)", fontSize: 12, fontWeight: 600, color: "var(--text-3)", letterSpacing: "0.3px", textTransform: "uppercase" }}>
         <div>Área</div>
         <div>Progreso</div>
         <div style={{ textAlign: "center" }}>Total</div>
@@ -222,22 +222,22 @@ function AreaHealthTable({ areas }: { areas: any[] }) {
         const isBad = overdue > 0;
         
         return (
-          <div key={a.areaId} style={{ display: "grid", gridTemplateColumns: "180px 1fr 54px 62px 60px", alignItems: "center", padding: "10px 14px", borderBottom: i < areas.length - 1 ? "1px solid var(--border-light)" : "none", background: isBad ? "#fef2f2" : "transparent", cursor: "pointer", transition: "background 0.1s" }} onMouseEnter={e => { if(!isBad) e.currentTarget.style.background = "var(--surface-alt)" }} onMouseLeave={e => { if(!isBad) e.currentTarget.style.background = "transparent" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <div style={{ width: 8, height: 8, borderRadius: "50%", background: a.color }} />
-              <span style={{ fontSize: 13, fontWeight: 500, color: "var(--text-1)" }}>{a.name}</span>
+          <div key={a.areaId} style={{ display: "grid", gridTemplateColumns: "220px 1fr 64px 72px 70px", alignItems: "center", padding: "14px 20px", borderBottom: i < areas.length - 1 ? "1px solid var(--border-light)" : "none", background: isBad ? "#fef2f2" : "transparent", cursor: "pointer", transition: "background 0.1s" }} onMouseEnter={e => { if(!isBad) e.currentTarget.style.background = "var(--surface-alt)" }} onMouseLeave={e => { if(!isBad) e.currentTarget.style.background = "transparent" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ width: 10, height: 10, borderRadius: "50%", background: a.color }} />
+              <span style={{ fontSize: 15, fontWeight: 500, color: "var(--text-1)" }}>{a.name}</span>
             </div>
             
             <div style={{ display: "flex", alignItems: "center" }}>
-              <div style={{ flex: 1, height: 4, background: "#f0ede7", borderRadius: 2, marginRight: 8, overflow: "hidden" }}>
+              <div style={{ flex: 1, height: 6, background: "#f0ede7", borderRadius: 3, marginRight: 12, overflow: "hidden" }}>
                 <div style={{ height: "100%", background: a.color, width: `${Math.min(rate, 100)}%` }} />
               </div>
-              <span style={{ fontSize: 11, fontWeight: 600, color: a.color, whiteSpace: "nowrap", width: 28 }}>{rate}%</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: a.color, whiteSpace: "nowrap", width: 32 }}>{rate}%</span>
             </div>
             
-            <div style={{ fontSize: 12, fontWeight: 500, color: "var(--text-2)", textAlign: "center" }}>{total}</div>
-            <div style={{ fontSize: 12, fontWeight: 500, color: "var(--ok)", textAlign: "center" }}>{completed}</div>
-            <div style={{ fontSize: 12, fontWeight: overdue > 0 ? 600 : 400, color: overdue > 0 ? "var(--bad)" : "var(--text-3)", textAlign: "center" }}>{overdue}</div>
+            <div style={{ fontSize: 13, fontWeight: 500, color: "var(--text-2)", textAlign: "center" }}>{total}</div>
+            <div style={{ fontSize: 13, fontWeight: 500, color: "var(--ok)", textAlign: "center" }}>{completed}</div>
+            <div style={{ fontSize: 13, fontWeight: overdue > 0 ? 600 : 500, color: overdue > 0 ? "var(--bad)" : "var(--text-3)", textAlign: "center" }}>{overdue}</div>
           </div>
         );
       })}
