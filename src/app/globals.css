@@ -6,31 +6,31 @@
    ═══════════════════════════════════════════════════════ */
 
 :root {
-  --bg:           #f7f6f3;
+  --bg:           #f8fafc;
   --surface:      #ffffff;
-  --surface-alt:  #faf9f7;
-  --border:       #e8e6e0;
-  --border-light: #f0ede7;
+  --surface-alt:  #f1f5f9;
+  --border:       #e2e8f0;
+  --border-light: #f1f5f9;
 
-  --text-1:  #18181b;
-  --text-2:  #52525b;
-  --text-3:  #a1a1aa;
-  --text-4:  #d4d4d8;
+  --text-1:  #0f172a;
+  --text-2:  #334155;
+  --text-3:  #64748b;
+  --text-4:  #94a3b8;
 
-  --accent:       #5746ea;
-  --accent-hover: #4c3ed9;
+  --accent:       #4f46e5;
+  --accent-hover: #4338ca;
 
   --ok:    #16a34a;
-  --warn:  #d97706;
-  --bad:   #dc2626;
+  --warn:  #ea580c;
+  --bad:   #ef4444;
 
-  --area-1: #818cf8;
-  --area-2: #38bdf8;
-  --area-3: #34d399;
-  --area-4: #fb923c;
-  --area-5: #f87171;
+  --area-1: #6366f1;
+  --area-2: #0ea5e9;
+  --area-3: #10b981;
+  --area-4: #f97316;
+  --area-5: #ef4444;
 
-  --r: 8px;
+  --r: 10px;
 
   /* Sidebar */
   --sidebar-bg: #18181b;
