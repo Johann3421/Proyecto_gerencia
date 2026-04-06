@@ -8,14 +8,14 @@ import Link from "next/link";
 import type { NotificationType } from "@prisma/client";
 
 const ICON_COLORS: Record<NotificationType, string> = {
-  TASK_ASSIGNED: "var(--info)",
-  TASK_APPROVED: "var(--success)",
-  TASK_REJECTED: "var(--danger)",
-  TASK_DUE_SOON: "var(--warning)",
-  TASK_OVERDUE: "var(--danger)",
-  APPROVAL_REQUESTED: "#a78bfa",
-  COMMENT_MENTION: "#818cf8",
-  STOCK_ALERT: "var(--warning)",
+  TASK_ASSIGNED: "var(--accent)",
+  TASK_APPROVED: "var(--ok)",
+  TASK_REJECTED: "var(--bad)",
+  TASK_DUE_SOON: "var(--warn)",
+  TASK_OVERDUE: "var(--bad)",
+  APPROVAL_REQUESTED: "var(--accent)",
+  COMMENT_MENTION: "var(--accent)",
+  STOCK_ALERT: "var(--warn)",
 };
 
 export function NotificationDrawer() {
@@ -51,32 +51,33 @@ export function NotificationDrawer() {
       <div
         className="fixed right-0 top-0 z-50 flex h-full w-full max-w-sm flex-col"
         style={{
-          background: "var(--bg-surface)",
-          boxShadow: "0 24px 64px rgba(0,0,0,0.5)",
+          background: "var(--surface)",
+          boxShadow: "0 24px 64px rgba(0,0,0,0.15)",
+          borderLeft: "1px solid var(--border)",
         }}
       >
         {/* Header */}
         <div
           className="flex items-center justify-between px-4 py-4"
-          style={{ borderBottom: "1px solid var(--border-subtle)" }}
+          style={{ borderBottom: "1px solid var(--border-light)" }}
         >
-          <h2 style={{ fontSize: 17, fontWeight: 600, color: "var(--text-primary)" }}>
+          <h2 style={{ fontSize: 17, fontWeight: 600, color: "var(--text-1)" }}>
             Notificaciones
           </h2>
           <div className="flex items-center gap-2">
             <button
               onClick={() => markRead.mutate({ all: true })}
               className="flex items-center gap-1 rounded-md px-2 py-1"
-              style={{ fontSize: 12, color: "#818cf8", transition: "opacity 0.15s" }}
+              style={{ fontSize: 13, fontWeight: 500, color: "var(--accent)", transition: "opacity 0.15s" }}
               disabled={markRead.isPending}
             >
-              <Check className="h-3.5 w-3.5" />
+              <Check className="h-4 w-4" />
               Marcar todo
             </button>
             <button
               onClick={() => setNotificationDrawerOpen(false)}
               className="rounded-md p-1"
-              style={{ color: "var(--text-muted)" }}
+              style={{ color: "var(--text-3)" }}
             >
               <X className="h-5 w-5" />
             </button>
@@ -94,10 +95,10 @@ export function NotificationDrawer() {
           )}
 
           {!isLoading && notifications.length === 0 && (
-            <div className="flex flex-col items-center justify-center gap-3 p-8 text-center">
-              <BellOff size={48} style={{ color: "var(--text-muted)" }} />
-              <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>Estás al día 👏</p>
-              <p style={{ fontSize: 12, color: "var(--text-muted)" }}>No hay notificaciones pendientes</p>
+            <div className="flex flex-col items-center justify-center gap-3 p-8 text-center mt-12">
+              <BellOff size={48} style={{ color: "var(--text-4)" }} />
+              <p style={{ fontSize: 15, fontWeight: 500, color: "var(--text-2)" }}>Estás al día 👏</p>
+              <p style={{ fontSize: 13, color: "var(--text-3)" }}>No hay notificaciones pendientes</p>
             </div>
           )}
 
@@ -111,17 +112,17 @@ export function NotificationDrawer() {
                 }
                 setNotificationDrawerOpen(false);
               }}
-              className="flex gap-3 px-4 py-3"
+              className="flex gap-3 px-5 py-4"
               style={{
-                borderBottom: "1px solid var(--border-subtle)",
-                background: !notif.isRead ? "rgba(99,102,241,0.06)" : "transparent",
-                transition: "background 0.15s",
+                borderBottom: "1px solid var(--border-light)",
+                background: !notif.isRead ? "var(--surface-alt)" : "transparent",
+                transition: "background 0.1s",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = "var(--bg-elevated)";
+                e.currentTarget.style.background = "var(--surface-alt)";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = !notif.isRead ? "rgba(99,102,241,0.06)" : "transparent";
+                e.currentTarget.style.background = !notif.isRead ? "var(--surface-alt)" : "transparent";
               }}
             >
               <div className="mt-0.5 flex-shrink-0">
@@ -129,14 +130,15 @@ export function NotificationDrawer() {
                   className="flex h-8 w-8 items-center justify-center"
                   style={{
                     borderRadius: "100%",
-                    background: "var(--bg-elevated)",
+                    background: "var(--surface-alt)",
+                    border: "1px solid var(--border)",
                   }}
                 >
                   {!notif.isRead ? (
                     <span
                       style={{
-                        width: 8,
-                        height: 8,
+                        width: 10,
+                        height: 10,
                         borderRadius: "100%",
                         background: ICON_COLORS[notif.type],
                       }}
@@ -144,10 +146,10 @@ export function NotificationDrawer() {
                   ) : (
                     <span
                       style={{
-                        width: 6,
-                        height: 6,
+                        width: 8,
+                        height: 8,
                         borderRadius: "100%",
-                        background: "var(--text-disabled)",
+                        background: "var(--text-4)",
                       }}
                     />
                   )}
@@ -156,20 +158,20 @@ export function NotificationDrawer() {
               <div className="min-w-0 flex-1">
                 <p
                   style={{
-                    fontSize: 13,
-                    fontWeight: notif.isRead ? 400 : 500,
-                    color: notif.isRead ? "var(--text-secondary)" : "var(--text-primary)",
+                    fontSize: 14,
+                    fontWeight: notif.isRead ? 500 : 600,
+                    color: notif.isRead ? "var(--text-2)" : "var(--text-1)",
                   }}
                 >
                   {notif.title}
                 </p>
                 <p
                   className="truncate"
-                  style={{ marginTop: 2, fontSize: 12, color: "var(--text-muted)" }}
+                  style={{ marginTop: 2, fontSize: 13, color: "var(--text-3)" }}
                 >
                   {notif.body}
                 </p>
-                <p style={{ marginTop: 4, fontSize: 10, color: "var(--text-disabled)" }}>
+                <p style={{ marginTop: 6, fontSize: 11, fontWeight: 500, color: "var(--text-4)" }}>
                   {formatRelativeDate(notif.createdAt)}
                 </p>
               </div>
