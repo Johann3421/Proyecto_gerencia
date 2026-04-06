@@ -10,8 +10,27 @@ import {
   BarChart3,
   Check,
   MessageSquare,
+  Building2,
+  Cpu,
+  TrendingUp,
+  Package,
+  Factory,
+  type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
+
+const AREA_ICONS: Record<string, LucideIcon> = {
+  "building-2": Building2,
+  "cpu": Cpu,
+  "trending-up": TrendingUp,
+  "package": Package,
+  "factory": Factory,
+};
+
+function getAreaIcon(iconName: string | undefined) {
+  const Icon = iconName ? (AREA_ICONS[iconName] ?? Building2) : Building2;
+  return <Icon size={24} />;
+}
 
 export default function AreaDetailPage({
   params,
@@ -58,7 +77,7 @@ export default function AreaDetailPage({
                 color: areaKpi.area?.color ?? "#6366f1", border: `1px solid ${areaKpi.area?.color ?? "#6366f1"}30`
               }}
             >
-              {areaKpi.area?.icon ?? "🏢"}
+              {getAreaIcon(areaKpi.area?.icon)}
             </div>
           )}
           <div>

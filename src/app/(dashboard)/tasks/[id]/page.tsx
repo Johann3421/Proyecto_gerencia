@@ -23,6 +23,7 @@ import {
   Image,
   FileText,
   Shield,
+  Activity,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -66,10 +67,10 @@ export default function TaskDetailPage() {
   if (isLoading) return <TaskDetailSkeleton />;
   if (!task) {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 py-20">
-        <XCircle size={48} style={{ color: "var(--text-muted)" }} />
-        <p style={{ fontSize: 14, color: "var(--text-muted)" }}>Tarea no encontrada</p>
-        <Link href="/tasks" style={{ fontSize: 14, color: "#818cf8" }} className="hover:underline">
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, padding: "80px 0" }}>
+        <XCircle size={48} color="var(--text-4)" />
+        <p style={{ fontSize: 14, color: "var(--text-3)" }}>Tarea no encontrada</p>
+        <Link href="/tasks" style={{ fontSize: 14, color: "var(--accent)", fontWeight: 500, textDecoration: "none" }}>
           Volver a tareas
         </Link>
       </div>
@@ -103,41 +104,49 @@ export default function TaskDetailPage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div style={{ paddingBottom: 64, maxWidth: 1000, margin: "0 auto" }}>
       {/* Header */}
-      <div className="flex items-center gap-3">
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 24, marginTop: 12 }}>
         <button
           onClick={() => router.back()}
-          className="rounded-lg p-2"
-          style={{ color: "var(--text-secondary)" }}
+          style={{
+            display: "flex", alignItems: "center", justifyContent: "center",
+            width: 36, height: 36, borderRadius: "50%", background: "var(--surface)",
+            border: "1px solid var(--border)", color: "var(--text-2)", transition: "all 0.1s", cursor: "pointer", marginTop: 4
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = "var(--surface-alt)"; e.currentTarget.style.color = "var(--text-1)"; }}
+          onMouseLeave={e => { e.currentTarget.style.background = "var(--surface)"; e.currentTarget.style.color = "var(--text-2)"; }}
         >
-          <ArrowLeft className="h-5 w-5" />
+          <ArrowLeft size={18} />
         </button>
-        <div className="flex-1">
-          <div className="flex flex-wrap items-center gap-2">
+        <div style={{ flex: 1 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8, marginBottom: 12 }}>
             <PriorityBadge priority={task.priority} />
             <StatusBadge status={task.status} />
-            <span style={{ padding: "3px 8px", borderRadius: "100px", fontSize: 10, fontWeight: 500, color: task.area.color, backgroundColor: `${task.area.color}1F` }}>
+            <span style={{ padding: "3px 10px", borderRadius: "100px", fontSize: 11, fontWeight: 600, color: task.area.color, backgroundColor: `${task.area.color}15`, border: `1px solid ${task.area.color}30` }}>
               {task.area.name}
             </span>
           </div>
-          <h1 style={{ marginTop: 4, fontSize: 18, fontWeight: 700, color: "var(--text-primary)" }}>
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--text-1)", margin: "0 0 4px 0", letterSpacing: "-0.4px", lineHeight: 1.3 }}>
             {task.title}
           </h1>
+          <p style={{ fontSize: 13, color: "var(--text-3)", margin: 0 }}>ID Ticket: #{task.id.slice(-6).toUpperCase()}</p>
         </div>
       </div>
 
       {/* Main content grid */}
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div style={{ display: "grid", gap: 24, gridTemplateColumns: "1fr", '@media (min-width: 1024px)': { gridTemplateColumns: "1fr 340px" } } as any}>
+        
         {/* Left: Main content */}
-        <div className="space-y-6 lg:col-span-2">
+        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+          
           {/* Description */}
           {task.description && (
-            <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border-subtle)", borderRadius: "var(--radius-lg)", padding: 16 }}>
-              <h2 style={{ marginBottom: 8, fontSize: 14, fontWeight: 600, color: "var(--text-secondary)" }}>
-                Descripción
+            <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--r)", padding: "24px 28px" }}>
+              <h2 style={{ margin: "0 0 12px 0", fontSize: 14, fontWeight: 600, color: "var(--text-1)" }}>
+                Descripción de la tarea
               </h2>
-              <p className="whitespace-pre-wrap" style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+              <p style={{ fontSize: 14, color: "var(--text-2)", whiteSpace: "pre-wrap", lineHeight: 1.6, margin: 0 }}>
                 {task.description}
               </p>
             </div>
@@ -145,202 +154,208 @@ export default function TaskDetailPage() {
 
           {/* Pending approval banner */}
           {pendingApproval && can("approvals", "resolve") && (
-            <div style={{ background: "var(--warning-bg)", border: "1px solid rgba(251,191,36,0.20)", borderRadius: "var(--radius-lg)", padding: 16 }}>
-              <div className="flex items-center gap-2" style={{ color: "var(--warning)" }}>
-                <Shield className="h-5 w-5" />
-                <span style={{ fontSize: 14, fontWeight: 600 }}>Aprobación pendiente</span>
+            <div style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: "var(--r)", padding: "20px 24px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--warn)" }}>
+                <Shield size={18} />
+                <span style={{ fontSize: 14, fontWeight: 600 }}>Aprobación pendiente obligatoria</span>
               </div>
               {pendingApproval.notes && (
-                <p style={{ marginTop: 8, fontSize: 14, color: "var(--warning)" }}>
+                <p style={{ margin: "12px 0 0 0", fontSize: 14, color: "#92400e" }}>
                   {pendingApproval.notes}
                 </p>
               )}
-              <div className="mt-3 flex gap-2">
+              <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
                 <button
                   onClick={() => handleApproval("APPROVED")}
                   disabled={resolveApproval.isPending}
-                  className="flex items-center gap-1"
-                  style={{ padding: "8px 16px", borderRadius: "var(--radius-md)", background: "var(--success)", color: "#000", fontSize: 12, fontWeight: 500, opacity: resolveApproval.isPending ? 0.5 : 1 }}
+                  style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 20px", borderRadius: 6, background: "var(--ok)", color: "#fff", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer", opacity: resolveApproval.isPending ? 0.7 : 1 }}
                 >
-                  <CheckCircle2 className="h-4 w-4" />
-                  Aprobar
+                  <CheckCircle2 size={16} /> Aprobar
                 </button>
                 <button
                   onClick={() => handleApproval("REJECTED")}
                   disabled={resolveApproval.isPending}
-                  className="flex items-center gap-1"
-                  style={{ padding: "8px 16px", borderRadius: "var(--radius-md)", background: "var(--danger)", color: "#fff", fontSize: 12, fontWeight: 500, opacity: resolveApproval.isPending ? 0.5 : 1 }}
+                  style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 20px", borderRadius: 6, background: "var(--bad)", color: "#fff", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer", opacity: resolveApproval.isPending ? 0.7 : 1 }}
                 >
-                  <XCircle className="h-4 w-4" />
-                  Rechazar
+                  <XCircle size={16} /> Rechazar
                 </button>
               </div>
             </div>
           )}
 
           {/* Tab bar */}
-          <div className="flex" style={{ borderBottom: "1px solid var(--border-subtle)" }}>
+          <div style={{ borderBottom: "1px solid var(--border)", display: "flex", gap: 24, marginTop: 8 }}>
             <button
               onClick={() => setActiveTab("timeline")}
-              className="flex items-center gap-1.5 px-4 py-2.5"
               style={{
-                fontSize: 14, fontWeight: 500, transition: "all 0.15s",
-                borderBottom: activeTab === "timeline" ? "2px solid #818cf8" : "2px solid transparent",
-                color: activeTab === "timeline" ? "#818cf8" : "var(--text-muted)",
+                display: "flex", alignItems: "center", gap: 8, padding: "12px 4px", background: "none", border: "none",
+                fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "all 0.15s",
+                borderBottom: activeTab === "timeline" ? "2px solid var(--accent)" : "2px solid transparent",
+                color: activeTab === "timeline" ? "var(--text-1)" : "var(--text-3)",
               }}
             >
-              <MessageSquare className="h-4 w-4" />
-              Timeline ({task.logs.length + task.comments.length})
+              <MessageSquare size={16} /> Timeline ({task.logs.length + task.comments.length})
             </button>
             <button
               onClick={() => setActiveTab("evidence")}
-              className="flex items-center gap-1.5 px-4 py-2.5"
               style={{
-                fontSize: 14, fontWeight: 500, transition: "all 0.15s",
-                borderBottom: activeTab === "evidence" ? "2px solid #818cf8" : "2px solid transparent",
-                color: activeTab === "evidence" ? "#818cf8" : "var(--text-muted)",
+                display: "flex", alignItems: "center", gap: 8, padding: "12px 4px", background: "none", border: "none",
+                fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "all 0.15s",
+                borderBottom: activeTab === "evidence" ? "2px solid var(--accent)" : "2px solid transparent",
+                color: activeTab === "evidence" ? "var(--text-1)" : "var(--text-3)",
               }}
             >
-              <Paperclip className="h-4 w-4" />
-              Evidencias ({task.evidence.length})
+              <Paperclip size={16} /> Evidencias ({task.evidence.length})
             </button>
           </div>
 
           {/* Timeline */}
           {activeTab === "timeline" && (
-            <div className="space-y-4">
-              {/* Merged and sorted timeline */}
-              {[
-                ...task.logs.map((log) => ({
-                  type: "log" as const,
-                  date: new Date(log.createdAt),
-                  data: log,
-                })),
-                ...task.comments.map((comment) => ({
-                  type: "comment" as const,
-                  date: new Date(comment.createdAt),
-                  data: comment,
-                })),
-              ]
-                .sort((a, b) => a.date.getTime() - b.date.getTime())
-                .map((entry, i) => (
-                  <div key={i} className="flex gap-3">
-                    {/* Icon */}
-                    <div className="flex flex-col items-center">
-                      <div className={cn(
-                        "flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full",
-                        entry.type === "comment" ? "bg-indigo-100 text-indigo-600" : "bg-zinc-100 text-zinc-500 dark:bg-zinc-800"
-                      )}>
-                        {entry.type === "comment" ? (
-                          <MessageSquare className="h-4 w-4" />
-                        ) : entry.data.action === "STATUS_CHANGED" ? (
-                          <PlayCircle className="h-4 w-4" />
-                        ) : entry.data.action === "ASSIGNED" ? (
-                          <User className="h-4 w-4" />
-                        ) : entry.data.action === "EVIDENCE_UPLOADED" ? (
-                          <Image className="h-4 w-4" />
-                        ) : (
-                          <Clock className="h-4 w-4" />
-                        )}
-                      </div>
-                      {i < task.logs.length + task.comments.length - 1 && (
-                        <div className="w-px flex-1 bg-zinc-200 dark:bg-zinc-700" />
-                      )}
-                    </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 24, paddingTop: 12 }}>
+              
+              {/* Comment input form */}
+              <div style={{ display: "flex", gap: 12, alignItems: "flex-start", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--r)", padding: 16 }}>
+                <div style={{ width: 36, height: 36, borderRadius: "50%", background: "var(--accent)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, flexShrink: 0 }}>
+                  U
+                </div>
+                <form onSubmit={handleSubmitComment} style={{ flex: 1, display: "flex", flexDirection: "column", gap: 12 }}>
+                  <textarea
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    placeholder="Dejar un comentario en el ticket..."
+                    style={{
+                      width: "100%", minHeight: 60, padding: "12px 16px",
+                      fontSize: 14, background: "var(--surface)", border: "1px solid var(--border-light)",
+                      borderRadius: 8, outline: "none", color: "var(--text-1)", resize: "none",
+                      transition: "border-color 0.15s"
+                    }}
+                    onFocus={e => { e.currentTarget.style.borderColor = "var(--accent)" }}
+                    onBlur={e => { e.currentTarget.style.borderColor = "var(--border-light)" }}
+                  />
+                  <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                    <button
+                      type="submit"
+                      disabled={!commentText.trim() || addComment.isPending}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 8, padding: "0 20px", height: 36,
+                        background: "var(--text-1)", color: "#fff", border: "none", borderRadius: 8,
+                        fontSize: 13, fontWeight: 600, cursor: (!commentText.trim() || addComment.isPending) ? "not-allowed" : "pointer",
+                        opacity: (!commentText.trim() || addComment.isPending) ? 0.5 : 1
+                      }}
+                    >
+                      <Send size={14} /> Comentar
+                    </button>
+                  </div>
+                </form>
+              </div>
 
-                    {/* Content */}
-                    <div className="flex-1 pb-4">
-                      {entry.type === "comment" ? (
-                        <div className="rounded-lg border border-zinc-200 bg-white p-3 dark:border-zinc-700 dark:bg-zinc-900">
-                          <div className="flex items-center gap-2">
-                            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-100 text-[10px] font-bold text-indigo-600">
-                              {entry.data.author.name.charAt(0)}
+              {/* Event logic */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 0, paddingLeft: 18 }}>
+                {[
+                  ...task.logs.map((log) => ({ type: "log" as const, date: new Date(log.createdAt), data: log })),
+                  ...task.comments.map((comment) => ({ type: "comment" as const, date: new Date(comment.createdAt), data: comment })),
+                ]
+                  .sort((a, b) => b.date.getTime() - a.date.getTime())
+                  .map((entry, i, arr) => (
+                    <div key={i} style={{ display: "flex", gap: 20, position: "relative", paddingBottom: i === arr.length - 1 ? 0 : 32 }}>
+                      {/* Line */}
+                      {i !== arr.length - 1 && (
+                        <div style={{ position: "absolute", left: 15, top: 32, bottom: -8, width: 2, background: "var(--border-light)" }} />
+                      )}
+                      
+                      {/* Icon */}
+                      <div style={{ position: "relative", zIndex: 2 }}>
+                        <div style={{ 
+                          width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
+                          background: entry.type === "comment" ? "var(--surface-alt)" : "var(--surface)", 
+                          border: entry.type === "comment" ? "1px solid var(--border)" : "2px solid var(--border-light)",
+                          color: entry.type === "comment" ? "var(--text-1)" : "var(--text-3)"
+                        }}>
+                          {entry.type === "comment" ? (
+                            <MessageSquare size={14} />
+                          ) : entry.data.action === "STATUS_CHANGED" ? (
+                            <Activity size={14} />
+                          ) : entry.data.action === "ASSIGNED" ? (
+                            <User size={14} />
+                          ) : entry.data.action === "EVIDENCE_UPLOADED" ? (
+                            <Image size={14} />
+                          ) : (
+                            <Clock size={14} />
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Content */}
+                      <div style={{ flex: 1, paddingTop: 4 }}>
+                        {entry.type === "comment" ? (
+                          <div style={{ background: "var(--surface-alt)", border: "1px solid var(--border)", borderRadius: "var(--r)", padding: 16 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                              <div style={{ width: 20, height: 20, borderRadius: "50%", background: "var(--text-2)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700 }}>
+                                {entry.data.author.name.charAt(0)}
+                              </div>
+                              <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-1)" }}>
+                                {entry.data.author.name}
+                              </span>
+                              <span style={{ fontSize: 12, color: "var(--text-4)" }}>
+                                {formatRelativeDate(entry.date)}
+                              </span>
                             </div>
-                            <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
-                              {entry.data.author.name}
-                            </span>
-                            <span className="text-[10px] text-zinc-400">
+                            <p style={{ margin: 0, fontSize: 14, color: "var(--text-2)", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>
+                              {entry.data.content}
+                            </p>
+                          </div>
+                        ) : (
+                          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                            <p style={{ margin: 0, fontSize: 13, color: "var(--text-2)" }}>
+                              <span style={{ fontWeight: 600, color: "var(--text-1)" }}>
+                                {entry.data.user.name}
+                              </span>{" "}
+                              {getLogDescription(entry.data.action, entry.data.fromValue, entry.data.toValue)}
+                            </p>
+                            <span style={{ fontSize: 11, color: "var(--text-4)", fontWeight: 500 }}>
                               {formatRelativeDate(entry.date)}
                             </span>
                           </div>
-                          <p className="mt-2 whitespace-pre-wrap text-sm text-zinc-600 dark:text-zinc-400">
-                            {entry.data.content}
-                          </p>
-                        </div>
-                      ) : (
-                        <div>
-                          <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                            <span className="font-medium text-zinc-800 dark:text-zinc-200">
-                              {entry.data.user.name}
-                            </span>{" "}
-                            {getLogDescription(entry.data.action, entry.data.fromValue, entry.data.toValue)}
-                          </p>
-                          <p className="mt-0.5 text-[10px] text-zinc-400">
-                            {formatRelativeDate(entry.date)}
-                          </p>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
-
-              {/* Comment input */}
-              <form onSubmit={handleSubmitComment} className="flex gap-2">
-                <input
-                  type="text"
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  placeholder="Escribe un comentario..."
-                  className="h-10 flex-1 rounded-lg border border-zinc-200 bg-white px-3 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-zinc-700 dark:bg-zinc-900"
-                />
-                <button
-                  type="submit"
-                  disabled={!commentText.trim() || addComment.isPending}
-                  className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
-                >
-                  <Send className="h-4 w-4" />
-                </button>
-              </form>
+                  ))}
+              </div>
             </div>
           )}
 
           {/* Evidence */}
           {activeTab === "evidence" && (
-            <div>
+            <div style={{ paddingTop: 12 }}>
               {task.evidence.length === 0 ? (
-                <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-zinc-200 p-8 dark:border-zinc-700">
-                  <Paperclip className="h-10 w-10 text-zinc-300" />
-                  <p className="mt-2 text-sm text-zinc-500">Sin evidencias adjuntas</p>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: 64, background: "var(--surface-alt)", border: "1px dashed var(--border)", borderRadius: "var(--r)" }}>
+                  <Paperclip size={32} color="var(--border)" style={{ marginBottom: 12 }} />
+                  <p style={{ margin: 0, fontSize: 14, color: "var(--text-3)", fontWeight: 500 }}>No se adjuntaron evidencias</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 16 }}>
                   {task.evidence.map((ev) => (
                     <a
-                      key={ev.id}
-                      href={ev.fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800"
+                      key={ev.id} href={ev.fileUrl} target="_blank" rel="noopener noreferrer"
+                      style={{ textDecoration: "none", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--r)", overflow: "hidden", display: "flex", flexDirection: "column", transition: "transform 0.1s" }}
+                      onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)" }}
+                      onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)" }}
                     >
                       {ev.fileType.startsWith("image/") ? (
-                        <div className="relative aspect-square bg-zinc-100 dark:bg-zinc-800">
-                          <img
-                            src={ev.fileUrl}
-                            alt={ev.caption ?? ev.fileName}
-                            className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                          />
+                        <div style={{ width: "100%", height: 140, background: "var(--surface-alt)" }}>
+                          <img src={ev.fileUrl} alt={ev.caption ?? ev.fileName} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         </div>
                       ) : (
-                        <div className="flex aspect-square items-center justify-center bg-zinc-50 dark:bg-zinc-900">
-                          <FileText className="h-8 w-8 text-zinc-400" />
+                        <div style={{ width: "100%", height: 140, background: "var(--surface-alt)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <FileText size={40} color="var(--text-4)" />
                         </div>
                       )}
-                      <div className="p-2">
-                        <p className="truncate text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                      <div style={{ padding: 12 }}>
+                        <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "var(--text-1)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                           {ev.fileName}
                         </p>
                         {ev.caption && (
-                          <p className="mt-0.5 truncate text-[10px] text-zinc-500">{ev.caption}</p>
+                          <p style={{ margin: "4px 0 0 0", fontSize: 11, color: "var(--text-3)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{ev.caption}</p>
                         )}
                       </div>
                     </a>
@@ -352,22 +367,21 @@ export default function TaskDetailPage() {
         </div>
 
         {/* Right sidebar */}
-        <div className="space-y-4">
-          {/* Status actions */}
-          <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border-subtle)", borderRadius: "var(--radius-lg)", padding: 16 }}>
-            <h3 style={{ marginBottom: 12, fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>
-              Acciones
+        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+          
+          {/* Status actions box */}
+          <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--r)", padding: 20 }}>
+            <h3 style={{ margin: "0 0 16px 0", fontSize: 12, fontWeight: 700, color: "var(--text-3)", letterSpacing: "0.5px", textTransform: "uppercase" }}>
+              Control de ejecución
             </h3>
-            <div className="space-y-2">
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {task.status === "PENDING" && (
                 <button
                   onClick={() => handleStatusChange("IN_PROGRESS")}
                   disabled={updateStatus.isPending}
-                  className="flex w-full items-center justify-center gap-1"
-                  style={{ padding: "8px 12px", borderRadius: "var(--radius-md)", background: "var(--info)", color: "#fff", fontSize: 12, fontWeight: 500, opacity: updateStatus.isPending ? 0.5 : 1 }}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "10px 16px", borderRadius: 8, background: "var(--text-1)", color: "#fff", fontSize: 13, fontWeight: 600, border: "none", cursor: updateStatus.isPending ? "not-allowed" : "pointer", opacity: updateStatus.isPending ? 0.7 : 1 }}
                 >
-                  <PlayCircle className="h-4 w-4" />
-                  Iniciar tarea
+                  <PlayCircle size={16} /> Iniciar trabajo ahora
                 </button>
               )}
               {task.status === "IN_PROGRESS" && (
@@ -375,20 +389,16 @@ export default function TaskDetailPage() {
                   <button
                     onClick={() => handleStatusChange("AWAITING_REVIEW")}
                     disabled={updateStatus.isPending}
-                    className="flex w-full items-center justify-center gap-1"
-                    style={{ padding: "8px 12px", borderRadius: "var(--radius-md)", background: "var(--warning)", color: "#000", fontSize: 12, fontWeight: 500, opacity: updateStatus.isPending ? 0.5 : 1 }}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "10px 16px", borderRadius: 8, background: "var(--ok)", color: "#fff", fontSize: 13, fontWeight: 600, border: "none", cursor: updateStatus.isPending ? "not-allowed" : "pointer", opacity: updateStatus.isPending ? 0.7 : 1 }}
                   >
-                    <Clock className="h-4 w-4" />
-                    Enviar a revisión
+                    <CheckCircle2 size={16} /> Enviar a revisión
                   </button>
                   <button
                     onClick={() => handleStatusChange("BLOCKED")}
                     disabled={updateStatus.isPending}
-                    className="flex w-full items-center justify-center gap-1"
-                    style={{ padding: "8px 12px", borderRadius: "var(--radius-md)", border: "1px solid rgba(248,113,113,0.3)", color: "var(--danger)", fontSize: 12, fontWeight: 500, opacity: updateStatus.isPending ? 0.5 : 1 }}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "10px 16px", borderRadius: 8, background: "transparent", border: "1px solid var(--bad)", color: "var(--bad)", fontSize: 13, fontWeight: 600, cursor: updateStatus.isPending ? "not-allowed" : "pointer", opacity: updateStatus.isPending ? 0.7 : 1 }}
                   >
-                    <XCircle className="h-4 w-4" />
-                    Marcar bloqueada
+                    <XCircle size={16} /> Reportar bloqueo
                   </button>
                 </>
               )}
@@ -396,94 +406,95 @@ export default function TaskDetailPage() {
                 <button
                   onClick={() => handleStatusChange("COMPLETED")}
                   disabled={updateStatus.isPending}
-                  className="flex w-full items-center justify-center gap-1"
-                  style={{ padding: "8px 12px", borderRadius: "var(--radius-md)", background: "var(--success)", color: "#000", fontSize: 12, fontWeight: 500, opacity: updateStatus.isPending ? 0.5 : 1 }}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "10px 16px", borderRadius: 8, background: "var(--accent)", color: "#fff", fontSize: 13, fontWeight: 600, border: "none", cursor: updateStatus.isPending ? "not-allowed" : "pointer", opacity: updateStatus.isPending ? 0.7 : 1 }}
                 >
-                  <CheckCircle2 className="h-4 w-4" />
-                  Marcar completada
+                  <CheckCircle2 size={16} /> Cerrar ticket (Completar)
                 </button>
               )}
               {task.status === "REJECTED" && (
                 <button
                   onClick={() => handleStatusChange("IN_PROGRESS")}
                   disabled={updateStatus.isPending}
-                  className="flex w-full items-center justify-center gap-1"
-                  style={{ padding: "8px 12px", borderRadius: "var(--radius-md)", background: "var(--info)", color: "#fff", fontSize: 12, fontWeight: 500, opacity: updateStatus.isPending ? 0.5 : 1 }}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "10px 16px", borderRadius: 8, background: "var(--warn)", color: "#fff", fontSize: 13, fontWeight: 600, border: "none", cursor: updateStatus.isPending ? "not-allowed" : "pointer", opacity: updateStatus.isPending ? 0.7 : 1 }}
                 >
-                  <PlayCircle className="h-4 w-4" />
-                  Retomar tarea
+                  <PlayCircle size={16} /> Reiniciar por rechazo
                 </button>
+              )}
+              {task.status === "COMPLETED" && (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "10px 16px", borderRadius: 8, background: "#f0fdf4", border: "1px solid #bbf7d0", color: "var(--ok)", fontSize: 13, fontWeight: 600 }}>
+                  <CheckCircle2 size={16} /> Ticket 100% finalizado
+                </div>
               )}
             </div>
           </div>
 
-          {/* Details */}
-          <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border-subtle)", borderRadius: "var(--radius-lg)", padding: 16 }}>
-            <h3 style={{ marginBottom: 12, fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>
-              Detalles
+          {/* Properties box */}
+          <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--r)", padding: 20 }}>
+            <h3 style={{ margin: "0 0 16px 0", fontSize: 12, fontWeight: 700, color: "var(--text-3)", letterSpacing: "0.5px", textTransform: "uppercase" }}>
+              Propiedades
             </h3>
-            <dl className="space-y-3" style={{ fontSize: 14 }}>
-              <div className="flex justify-between">
-                <dt style={{ color: "var(--text-muted)" }}>Asignado a</dt>
-                <dd style={{ fontWeight: 500, color: "var(--text-primary)" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--border-light)", paddingBottom: 14 }}>
+                <span style={{ fontSize: 13, color: "var(--text-3)" }}>Responsable</span>
+                <span style={{ fontSize: 13, fontWeight: 500, color: "var(--text-1)" }}>
                   {task.assignedTo?.name ?? "Sin asignar"}
-                </dd>
+                </span>
               </div>
-              <div className="flex justify-between">
-                <dt style={{ color: "var(--text-muted)" }}>Creado por</dt>
-                <dd style={{ fontWeight: 500, color: "var(--text-primary)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--border-light)", paddingBottom: 14 }}>
+                <span style={{ fontSize: 13, color: "var(--text-3)" }}>Solicitante</span>
+                <span style={{ fontSize: 13, fontWeight: 500, color: "var(--text-1)" }}>
                   {task.createdBy.name}
-                </dd>
+                </span>
               </div>
-              <div className="flex justify-between">
-                <dt style={{ color: "var(--text-muted)" }}>Área</dt>
-                <dd style={{ fontWeight: 500, color: task.area.color }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--border-light)", paddingBottom: 14 }}>
+                <span style={{ fontSize: 13, color: "var(--text-3)" }}>Segmento</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: task.area.color }}>
                   {task.area.name}
-                </dd>
+                </span>
               </div>
               {task.department && (
-                <div className="flex justify-between">
-                  <dt style={{ color: "var(--text-muted)" }}>Departamento</dt>
-                  <dd style={{ fontWeight: 500, color: "var(--text-primary)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--border-light)", paddingBottom: 14 }}>
+                  <span style={{ fontSize: 13, color: "var(--text-3)" }}>Departamento</span>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: "var(--text-1)" }}>
                     {task.department.name}
-                  </dd>
+                  </span>
                 </div>
               )}
-              <div className="flex justify-between">
-                <dt style={{ color: "var(--text-muted)" }}>Fecha límite</dt>
-                <dd style={{ fontWeight: 500, color: due.isOverdue ? "var(--danger)" : due.isUrgent ? "var(--warning)" : "var(--text-primary)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--border-light)", paddingBottom: 14 }}>
+                <span style={{ fontSize: 13, color: "var(--text-3)" }}>Vencimiento</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: due.isOverdue ? "var(--bad)" : due.isUrgent ? "var(--warn)" : "var(--text-1)" }}>
                   {due.text}
-                </dd>
+                </span>
               </div>
-              <div className="flex justify-between">
-                <dt style={{ color: "var(--text-muted)" }}>Creado</dt>
-                <dd style={{ color: "var(--text-secondary)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: 13, color: "var(--text-3)" }}>Aperturado</span>
+                <span style={{ fontSize: 13, fontWeight: 500, color: "var(--text-3)" }}>
                   {formatRelativeDate(task.createdAt)}
-                </dd>
+                </span>
               </div>
-            </dl>
+            </div>
           </div>
 
-          {/* Subtasks */}
+          {/* Subtasks box */}
           {task.subtasks.length > 0 && (
-            <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
-              <h3 className="mb-3 flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-zinc-500">
-                <GitBranch className="h-3.5 w-3.5" />
-                Sub-tareas ({task.subtasks.length})
+            <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--r)", padding: 20 }}>
+              <h3 style={{ margin: "0 0 16px 0", display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 700, color: "var(--text-3)", letterSpacing: "0.5px", textTransform: "uppercase" }}>
+                <GitBranch size={14} /> Sub-tareas ({task.subtasks.length})
               </h3>
-              <div className="space-y-2">
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {task.subtasks.map((sub) => (
                   <Link
                     key={sub.id}
                     href={`/tasks/${sub.id}`}
-                    className="flex items-center justify-between rounded-lg border border-zinc-100 p-2 text-xs hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
+                    style={{
+                      display: "flex", alignItems: "center", justifyContent: "space-between", textDecoration: "none",
+                      padding: "8px 12px", background: "var(--surface)", border: "1px solid var(--border-light)", borderRadius: 8, transition: "background 0.1s"
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "var(--surface-alt)" }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "var(--surface)" }}
                   >
-                    <span className="truncate text-zinc-700 dark:text-zinc-300">{sub.title}</span>
-                    <span className={cn("rounded px-1.5 py-0.5 text-[9px]",
-                      STATUS_CONFIG[sub.status].bgColor,
-                      STATUS_CONFIG[sub.status].color
-                    )}>
-                      {STATUS_CONFIG[sub.status].label}
+                    <span style={{ fontSize: 13, fontWeight: 500, color: "var(--text-2)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {sub.title}
                     </span>
                   </Link>
                 ))}
@@ -491,18 +502,20 @@ export default function TaskDetailPage() {
             </div>
           )}
 
-          {/* Tags */}
+          {/* Tags box */}
           {task.tags.length > 0 && (
-            <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
-              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+            <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--r)", padding: 20 }}>
+              <h3 style={{ margin: "0 0 12px 0", fontSize: 12, fontWeight: 700, color: "var(--text-3)", letterSpacing: "0.5px", textTransform: "uppercase" }}>
                 Etiquetas
               </h3>
-              <div className="flex flex-wrap gap-1.5">
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                 {task.tags.map((tag) => (
                   <span
                     key={tag.id}
-                    className="rounded-full px-2.5 py-1 text-[10px] font-medium text-white"
-                    style={{ backgroundColor: tag.color }}
+                    style={{
+                      padding: "4px 10px", borderRadius: 100, fontSize: 11, fontWeight: 600,
+                      backgroundColor: `${tag.color}15`, color: tag.color, border: `1px solid ${tag.color}30`
+                    }}
                   >
                     {tag.name}
                   </span>
