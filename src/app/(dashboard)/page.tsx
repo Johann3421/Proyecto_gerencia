@@ -2,26 +2,20 @@
 
 import { useSession } from "next-auth/react";
 import { trpc } from "@/lib/trpc-client";
-import { useUIStore } from "@/store/ui-store";
-import { TaskCard } from "@/components/dashboard/TaskCard";
-import { QuickReportModal } from "@/components/forms/QuickReportModal";
 import type { RoleType } from "@prisma/client";
 import {
-  ListTodo,
-  Flame,
-  AlertTriangle,
-  CheckCircle2,
-  Clock,
+  Check,
+  AlertCircle,
   TrendingUp,
-  Users,
-  Plus,
-  FileText,
-  Activity,
-  BarChart3,
-  ShieldCheck,
-  GridIcon,
+  Clock,
+  Square,
+  CheckSquare,
+  MessageSquare,
 } from "lucide-react";
 import Link from "next/link";
+
+// Make sure we have a working Grid icon
+import { Grid } from "lucide-react";
 
 export default function DashboardPage() {
   const { data: session } = useSession();
@@ -32,757 +26,391 @@ export default function DashboardPage() {
   }
 
   return (
-    <div>
-      {role === "OPERARIO" && <OperarioDashboard />}
+    <>
       {role === "SUPERVISOR" && <SupervisorDashboard />}
       {role === "ADMIN_AREA" && <AdminAreaDashboard />}
       {role === "SUPER_ADMIN" && <SuperAdminDashboard />}
       {role === "AUDITOR" && <AuditorDashboard />}
+      {role === "OPERARIO" && <OperarioDashboard />}
+    </>
+  );
+}
+
+// ─── Shared Components ────────────────────────────────
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{
+      fontSize: 11, fontWeight: 500, color: "var(--text-3)",
+      letterSpacing: "0.4px", textTransform: "uppercase", marginBottom: 8, marginTop: 24
+    }}>
+      {children}
     </div>
   );
 }
 
-// ─── OPERARIO Dashboard ──────────────────────────────
-
-function OperarioDashboard() {
-  const { setQuickReportModalOpen, quickReportModalOpen } = useUIStore();
-
-  const { data: tasksData, isLoading } = trpc.tasks.list.useQuery({
-    status: undefined,
-    page: 1,
-    limit: 5,
-  });
-
-  const tasks = tasksData?.tasks ?? [];
-  const todayTasks = tasks.filter(
-    (t) => t.status !== "COMPLETED" && t.status !== "CANCELLED"
-  );
-  const completedToday = tasks.filter((t) => t.status === "COMPLETED").length;
-  const totalActive = todayTasks.length;
-
+function StatStrip({ stats }: {
+  stats: { label: string; value: string | number; icon: React.ElementType; color: string; iconColor?: string }[]
+}) {
   return (
-    <div className="space-y-6">
-      {/* Hero: Mis tareas de hoy */}
-      <div
-        style={{
-          background: "linear-gradient(135deg, #4f46e5, #6366f1, #4338ca)",
-          borderRadius: "var(--radius-xl)",
-          padding: 24,
-          color: "white",
-        }}
-      >
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 style={{ fontSize: 20, fontWeight: 700 }}>Mis tareas de hoy</h1>
-            <p style={{ marginTop: 4, fontSize: 14, color: "rgba(255,255,255,0.7)" }}>
-              {totalActive > 0
-                ? `${totalActive} tarea${totalActive > 1 ? "s" : ""} pendiente${totalActive > 1 ? "s" : ""}`
-                : "Todo en orden 🎯 — No hay tareas pendientes"}
-            </p>
-          </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              background: "rgba(255,255,255,0.15)",
-              borderRadius: "var(--radius-lg)",
-              padding: "8px 16px",
-              backdropFilter: "blur(8px)",
-            }}
-          >
-            <Flame className="h-5 w-5" style={{ color: "#fb923c" }} />
-            <div>
-              <p style={{ fontSize: 10, fontWeight: 500, color: "rgba(255,255,255,0.6)" }}>Racha</p>
-              <p style={{ fontSize: 18, fontWeight: 700 }}>3 días</p>
+    <div style={{
+      background: "var(--surface)", border: "1px solid var(--border)",
+      borderRadius: "var(--r)", display: "flex", overflow: "hidden"
+    }}>
+      {stats.map((stat, i) => {
+        const Icon = stat.icon;
+        return (
+          <div key={i} style={{
+            flex: 1, padding: "14px 18px",
+            borderRight: i < stats.length - 1 ? "1px solid var(--border-light)" : "none"
+          }}>
+            <div style={{ fontSize: 11, color: "var(--text-3)", marginBottom: 3, display: "flex", alignItems: "center", gap: 5 }}>
+              <Icon size={12} color={stat.iconColor ?? stat.color} />
+              {stat.label}
+            </div>
+            <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.5px", lineHeight: 1, color: stat.color }}>
+              {stat.value}
             </div>
           </div>
-        </div>
-
-        {/* Progress bar */}
-        {totalActive > 0 && (
-          <div style={{ marginTop: 16 }}>
-            <div className="flex items-center justify-between" style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>
-              <span>Progreso del día</span>
-              <span>
-                {completedToday}/{completedToday + totalActive} completadas
-              </span>
-            </div>
-            <div
-              style={{
-                marginTop: 6,
-                height: 6,
-                borderRadius: "100px",
-                background: "rgba(255,255,255,0.2)",
-                overflow: "hidden",
-              }}
-            >
-              <div
-                style={{
-                  height: "100%",
-                  borderRadius: "100px",
-                  background: "white",
-                  transition: "width 0.6s ease",
-                  width: `${totalActive + completedToday > 0 ? (completedToday / (completedToday + totalActive)) * 100 : 0}%`,
-                }}
-              />
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Task list */}
-      <div>
-        <h2 style={{ marginBottom: 12, fontSize: 14, fontWeight: 600, color: "var(--text-secondary)" }}>
-          Tareas prioritarias
-        </h2>
-        {isLoading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="nexus-skeleton" style={{ height: 96, borderRadius: "var(--radius-lg)" }} />
-            ))}
-          </div>
-        ) : todayTasks.length === 0 ? (
-          <EmptyState
-            icon={<CheckCircle2 size={48} style={{ color: "var(--success)" }} />}
-            title="Todo al día"
-            subtitle="No tienes tareas pendientes por ahora."
-          />
-        ) : (
-          <div className="space-y-3">
-            {todayTasks.map((task) => (
-              <TaskCard key={task.id} task={task} />
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* FAB */}
-      <button
-        onClick={() => setQuickReportModalOpen(true)}
-        className="fixed bottom-20 right-4 z-40 flex items-center justify-center lg:bottom-6"
-        style={{
-          width: 56,
-          height: 56,
-          borderRadius: "100%",
-          background: "#4f46e5",
-          color: "white",
-          boxShadow: "0 8px 24px rgba(79,70,229,0.4)",
-          transition: "transform 0.15s",
-        }}
-        aria-label="Reportar problema"
-      >
-        <Plus className="h-6 w-6" />
-      </button>
-
-      {quickReportModalOpen && <QuickReportModal />}
+        );
+      })}
     </div>
   );
 }
 
-// ─── SUPERVISOR Dashboard ────────────────────────────
-
-function SupervisorDashboard() {
-  const { data: tasksData } = trpc.tasks.list.useQuery({
-    page: 1,
-    limit: 50,
-  });
-
-  const { data: completionData } = trpc.reports.taskCompletionRate.useQuery({});
-
-  const tasks = tasksData?.tasks ?? [];
-  const awaitingReview = tasks.filter((t) => t.status === "AWAITING_REVIEW");
-  const overdue = tasks.filter(
-    (t) =>
-      t.dueDate &&
-      new Date(t.dueDate) < new Date() &&
-      !["COMPLETED", "APPROVED", "CANCELLED"].includes(t.status)
-  );
-
-  return (
-    <div className="space-y-6">
-      <h1 style={{ fontSize: 18, fontWeight: 600, color: "var(--text-primary)" }}>
-        Panel de Supervisor
-      </h1>
-
-      {/* KPI cards */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <MetricCard
-          icon={<Clock size={20} style={{ color: "var(--warning)" }} />}
-          label="En revisión"
-          value={awaitingReview.length}
-          urgent={awaitingReview.length > 0}
-        />
-        <MetricCard
-          icon={<AlertTriangle size={20} style={{ color: "var(--danger)" }} />}
-          label="Vencidas"
-          value={overdue.length}
-          urgent={overdue.length > 0}
-        />
-        <MetricCard
-          icon={<CheckCircle2 size={20} style={{ color: "var(--success)" }} />}
-          label="Completadas"
-          value={completionData?.completed ?? 0}
-        />
-        <MetricCard
-          icon={<TrendingUp size={20} style={{ color: "var(--info)" }} />}
-          label="Tasa completitud"
-          value={`${completionData?.completionRate ?? 0}%`}
-          rateValue={completionData?.completionRate}
-        />
-      </div>
-
-      {/* Approvals pending */}
-      {awaitingReview.length > 0 ? (
-        <div>
-          <div className="mb-3 flex items-center justify-between">
-            <h2 style={{ fontSize: 14, fontWeight: 600, color: "var(--warning)" }}>
-              ⚡ Aprobaciones pendientes
-            </h2>
-            <Link href="/approvals" style={{ fontSize: 12, color: "#818cf8" }} className="hover:underline">
-              Ver todas
-            </Link>
-          </div>
-          <div className="space-y-2">
-            {awaitingReview.slice(0, 5).map((task) => (
-              <TaskCard key={task.id} task={task} compact />
-            ))}
-          </div>
-        </div>
-      ) : (
-        <EmptyState
-          icon={<ShieldCheck size={48} style={{ color: "var(--success)" }} />}
-          title="Sin pendientes"
-          subtitle="No hay solicitudes esperando tu revisión."
-        />
-      )}
-
-      {/* Recent tasks */}
-      <div>
-        <div className="mb-3 flex items-center justify-between">
-          <h2 style={{ fontSize: 14, fontWeight: 600, color: "var(--text-secondary)" }}>
-            Tareas del equipo
-          </h2>
-          <Link href="/tasks" style={{ fontSize: 12, color: "#818cf8" }} className="hover:underline">
-            Ver todas
-          </Link>
-        </div>
-        <div className="space-y-2">
-          {tasks.slice(0, 5).map((task) => (
-            <TaskCard key={task.id} task={task} compact />
-          ))}
-        </div>
-      </div>
+function CompactTaskList({ tasks, limit = 5 }: { tasks: any[], limit?: number }) {
+  if (tasks.length === 0) return (
+    <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--r)", padding: 24, textAlign: "center", fontSize: 13, color: "var(--text-3)" }}>
+      No hay tareas para mostrar.
     </div>
   );
-}
-
-// ─── ADMIN_AREA Dashboard ────────────────────────────
-
-function AdminAreaDashboard() {
-  const { data: completionData } = trpc.reports.taskCompletionRate.useQuery({});
-  const { data: tasksData } = trpc.tasks.list.useQuery({ page: 1, limit: 20 });
-
-  const tasks = tasksData?.tasks ?? [];
-  const blocked = tasks.filter((t) => t.status === "BLOCKED");
-  const critical = tasks.filter((t) => t.priority === "CRITICAL");
-  const problems = [...blocked, ...critical].slice(0, 3);
-
-  const rate = completionData?.completionRate ?? 0;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 style={{ fontSize: 18, fontWeight: 600, color: "var(--text-primary)" }}>
-          Panel de Área
-        </h1>
-        <button
-          className="flex items-center gap-1"
-          style={{
-            padding: "8px 16px",
-            borderRadius: "var(--radius-md)",
-            background: "#4f46e5",
-            color: "white",
-            fontSize: 13,
-            fontWeight: 500,
+    <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--r)", overflow: "hidden" }}>
+      {tasks.slice(0, limit).map((task) => {
+        const isCritical = task.priority === "CRITICAL";
+        const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && !["COMPLETED", "APPROVED", "CANCELLED"].includes(task.status);
+        const isBlocked = task.status === "BLOCKED";
+        const highlighted = isCritical && isBlocked && isOverdue;
+
+        const prioColor = task.priority === "CRITICAL" ? "var(--bad)" : task.priority === "HIGH" ? "#f59e0b" : task.priority === "MEDIUM" ? "#3b82f6" : "var(--text-3)";
+        
+        let areaBg = "#f4f4f5", areaColor = "#52525b";
+        if (task.area?.name) {
+          const l = task.area.name.toLowerCase();
+          if (l.includes("admin")) { areaBg = "#eef2ff"; areaColor = "#3730a3"; }
+          else if (l.includes("tec")) { areaBg = "#e0f2fe"; areaColor = "#0c4a6e"; }
+          else if (l.includes("comer")) { areaBg = "#dcfce7"; areaColor = "#14532d"; }
+          else if (l.includes("log")) { areaBg = "#fff7ed"; areaColor = "#9a3412"; }
+          else if (l.includes("prod")) { areaBg = "#fee2e2"; areaColor = "#991b1b"; }
+          else { areaBg = `${task.area.color}15`; areaColor = task.area.color; }
+        }
+
+        let statBg = "#f4f4f5", statColor = "#52525b", statLabel = "Pendiente";
+        switch (task.status) {
+          case "IN_PROGRESS": statBg = "#eff6ff"; statColor = "#1d4ed8"; statLabel = "En progreso"; break;
+          case "BLOCKED": statBg = "#fee2e2"; statColor = "#991b1b"; statLabel = "Bloqueado"; break;
+          case "AWAITING_REVIEW": statBg = "#fef9c3"; statColor = "#854d0e"; statLabel = "En revisión"; break;
+          case "APPROVED": statBg = "#dcfce7"; statColor = "#14532d"; statLabel = "Aprobado"; break;
+          case "COMPLETED": statBg = "#dcfce7"; statColor = "#14532d"; statLabel = "Completado"; break;
+        }
+
+        const dateDue = task.dueDate ? new Date(task.dueDate) : null;
+        let dateColor = "var(--text-3)", dateText = "";
+        if (dateDue) {
+          const relativeMs = dateDue.getTime() - new Date().getTime();
+          const relativeDays = Math.ceil(relativeMs / (1000 * 60 * 60 * 24));
+          
+          if (["COMPLETED", "APPROVED"].includes(task.status)) {
+            dateText = "Completada";
+          } else if (relativeDays < 0) {
+            dateColor = "var(--bad)"; dateText = "Vencida";
+          } else if (relativeDays === 0) {
+            dateColor = "var(--warn)"; dateText = "Vence hoy";
+          } else if (relativeDays === 1) {
+            dateColor = "var(--warn)"; dateText = "Mañana";
+          } else {
+            dateText = `En ${relativeDays} d`;
+          }
+        }
+
+        return (
+          <Link key={task.id} href={`/tasks/${task.id}`} style={{
+            display: "flex", alignItems: "center", padding: highlighted ? "0 14px 0 12px" : "0 14px",
+            minHeight: 44, borderBottom: "1px solid var(--border-light)", textDecoration: "none",
+            background: highlighted ? "#fffafa" : "transparent",
+            borderLeft: highlighted ? "2px solid var(--bad)" : "none",
+            transition: "background 0.1s"
           }}
-        >
-          <FileText className="h-4 w-4" />
-          Exportar reporte
-        </button>
-      </div>
-
-      {/* Health gauge */}
-      <div
-        style={{
-          background: "var(--bg-surface)",
-          border: "1px solid var(--border-subtle)",
-          borderRadius: "var(--radius-lg)",
-          padding: 24,
-        }}
-      >
-        <h2 style={{ marginBottom: 16, fontSize: 14, fontWeight: 600, color: "var(--text-secondary)" }}>
-          Salud del área
-        </h2>
-        <div className="flex items-center gap-6">
-          <div className="relative flex h-28 w-28 items-center justify-center">
-            <svg className="h-28 w-28 -rotate-90" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="42" fill="none" stroke="var(--bg-elevated)" strokeWidth="8" />
-              <circle
-                cx="50"
-                cy="50"
-                r="42"
-                fill="none"
-                stroke={rate >= 71 ? "var(--success)" : rate >= 41 ? "var(--warning)" : "var(--danger)"}
-                strokeWidth="8"
-                strokeDasharray={`${Math.min(rate, 100) * 2.64} 264`}
-                strokeLinecap="round"
-              />
-            </svg>
-            <span
-              className="absolute"
-              style={{
-                fontSize: 24,
-                fontWeight: 700,
-                color: rate >= 71 ? "var(--success)" : rate >= 41 ? "var(--warning)" : "var(--danger)",
-              }}
-            >
-              {rate}%
+          onMouseEnter={e => { if(!highlighted) e.currentTarget.style.background = "var(--surface-alt)" }}
+          onMouseLeave={e => { if(!highlighted) e.currentTarget.style.background = "transparent" }}
+          >
+            <div style={{ width: 14, height: 14, borderRadius: 3, border: "1.5px solid var(--text-4)", flexShrink: 0, marginRight: 10, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {["COMPLETED", "APPROVED"].includes(task.status) && <Check size={10} color="var(--text-3)" />}
+            </div>
+            
+            <div style={{ width: 6, height: 6, borderRadius: "50%", background: prioColor, flexShrink: 0, marginRight: 8 }} />
+            
+            <span style={{ fontSize: 13, color: "var(--text-1)", flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontWeight: 400 }}>
+              {task.title}
             </span>
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center gap-2" style={{ fontSize: 14 }}>
-              <CheckCircle2 size={16} style={{ color: "var(--success)" }} />
-              <span style={{ color: "var(--text-secondary)" }}>
-                {completionData?.completed ?? 0} completadas
+            
+            {task.area && (
+              <span style={{ fontSize: 11, fontWeight: 500, padding: "2px 8px", borderRadius: 4, marginLeft: 8, flexShrink: 0, background: areaBg, color: areaColor }}>
+                {task.area.name}
               </span>
-            </div>
-            <div className="flex items-center gap-2" style={{ fontSize: 14 }}>
-              <Activity size={16} style={{ color: "var(--info)" }} />
-              <span style={{ color: "var(--text-secondary)" }}>
-                {completionData?.inProgress ?? 0} en progreso
-              </span>
-            </div>
-            <div className="flex items-center gap-2" style={{ fontSize: 14 }}>
-              <AlertTriangle size={16} style={{ color: "var(--danger)" }} />
-              <span style={{ color: "var(--text-secondary)" }}>
-                {completionData?.overdue ?? 0} vencidas
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
+            )}
+            
+            <span style={{ fontSize: 11, fontWeight: 500, padding: "2px 8px", borderRadius: 4, marginLeft: 6, flexShrink: 0, background: statBg, color: statColor }}>
+              {statLabel}
+            </span>
 
-      {/* Top 3 problems */}
-      {problems.length > 0 && (
-        <div>
-          <h2 style={{ marginBottom: 12, fontSize: 14, fontWeight: 600, color: "var(--danger)" }}>
-            🚨 Problemas activos
-          </h2>
-          <div className="space-y-2">
-            {problems.map((task) => (
-              <TaskCard key={task.id} task={task} compact />
-            ))}
-          </div>
-        </div>
+            <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10, paddingLeft: 12 }}>
+              {task.assignedTo ? (
+                <div style={{ width: 20, height: 20, borderRadius: "50%", background: areaColor, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 700 }}>
+                  {task.assignedTo.name.charAt(0)}
+                </div>
+              ) : (
+                <div style={{ width: 20, height: 20, borderRadius: "50%", border: "1px dashed var(--text-4)" }} />
+              )}
+              
+              {dateText && (
+                <span style={{ fontSize: 11, color: dateColor, fontWeight: dateColor === "var(--text-3)" ? 400 : 500, width: 65, textAlign: "right" }}>
+                  {dateText}
+                </span>
+              )}
+              
+              {(task._count?.comments > 0) && (
+                <div style={{ display: "flex", alignItems: "center", gap: 3, color: "var(--text-3)", fontSize: 11, width: 30, justifyContent: "flex-end" }}>
+                  <MessageSquare size={11} /> {task._count.comments}
+                </div>
+              )}
+            </div>
+          </Link>
+        );
+      })}
+      {tasks.length > limit && (
+        <Link href="/tasks" style={{ display: "block", textAlign: "center", padding: 10, fontSize: 12, color: "var(--text-3)", textDecoration: "none" }}
+        onMouseEnter={e => e.currentTarget.style.color = "var(--accent)"}
+        onMouseLeave={e => e.currentTarget.style.color = "var(--text-3)"}>
+          Ver todas las tareas →
+        </Link>
       )}
-
-      {/* Week comparison */}
-      <div
-        style={{
-          background: "var(--bg-surface)",
-          border: "1px solid var(--border-subtle)",
-          borderRadius: "var(--radius-lg)",
-          padding: 24,
-        }}
-      >
-        <h2 style={{ marginBottom: 16, fontSize: 14, fontWeight: 600, color: "var(--text-secondary)" }}>
-          Comparativa semanal
-        </h2>
-        <div className="grid grid-cols-2 gap-4">
-          <div
-            className="text-center"
-            style={{
-              background: "var(--bg-elevated)",
-              borderRadius: "var(--radius-md)",
-              padding: 16,
-            }}
-          >
-            <p style={{ fontSize: 24, fontWeight: 700, color: "var(--text-primary)" }}>
-              {completionData?.total ?? 0}
-            </p>
-            <p style={{ fontSize: 12, color: "var(--text-muted)" }}>Tareas esta semana</p>
-          </div>
-          <div
-            className="text-center"
-            style={{
-              background: "var(--bg-elevated)",
-              borderRadius: "var(--radius-md)",
-              padding: 16,
-            }}
-          >
-            <p style={{
-              fontSize: 24,
-              fontWeight: 700,
-              color: rate >= 71 ? "var(--success)" : rate >= 41 ? "var(--warning)" : "var(--danger)",
-            }}>
-              {rate}%
-            </p>
-            <p style={{ fontSize: 12, color: "var(--text-muted)" }}>Tasa de completitud</p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
 
-// ─── SUPER_ADMIN Dashboard ───────────────────────────
+function AreaHealthTable({ areas }: { areas: any[] }) {
+  if (areas.length === 0) return null;
+  return (
+    <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--r)", overflow: "hidden" }}>
+      {/* Header */}
+      <div style={{ display: "grid", gridTemplateColumns: "180px 1fr 54px 62px 60px", padding: "8px 14px", background: "var(--surface-alt)", borderBottom: "1px solid var(--border-light)", fontSize: 10.5, fontWeight: 500, color: "var(--text-3)", letterSpacing: "0.3px", textTransform: "uppercase" }}>
+        <div>Área</div>
+        <div>Progreso</div>
+        <div style={{ textAlign: "center" }}>Total</div>
+        <div style={{ textAlign: "center" }}>Listas</div>
+        <div style={{ textAlign: "center" }}>Vencidas</div>
+      </div>
+      
+      {/* Rows */}
+      {areas.map((a, i) => {
+        const rate = a.completionRate ?? 0;
+        const total = a.taskCount ?? 0;
+        const completed = a.completedCount ?? 0;
+        const overdue = a.overdueCount ?? 0;
+        const isBad = overdue > 0;
+        
+        return (
+          <div key={a.areaId} style={{ display: "grid", gridTemplateColumns: "180px 1fr 54px 62px 60px", alignItems: "center", padding: "10px 14px", borderBottom: i < areas.length - 1 ? "1px solid var(--border-light)" : "none", background: isBad ? "#fef2f2" : "transparent", cursor: "pointer", transition: "background 0.1s" }} onMouseEnter={e => { if(!isBad) e.currentTarget.style.background = "var(--surface-alt)" }} onMouseLeave={e => { if(!isBad) e.currentTarget.style.background = "transparent" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ width: 8, height: 8, borderRadius: "50%", background: a.color }} />
+              <span style={{ fontSize: 13, fontWeight: 500, color: "var(--text-1)" }}>{a.name}</span>
+            </div>
+            
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <div style={{ flex: 1, height: 4, background: "#f0ede7", borderRadius: 2, marginRight: 8, overflow: "hidden" }}>
+                <div style={{ height: "100%", background: a.color, width: `${Math.min(rate, 100)}%` }} />
+              </div>
+              <span style={{ fontSize: 11, fontWeight: 600, color: a.color, whiteSpace: "nowrap", width: 28 }}>{rate}%</span>
+            </div>
+            
+            <div style={{ fontSize: 12, fontWeight: 500, color: "var(--text-2)", textAlign: "center" }}>{total}</div>
+            <div style={{ fontSize: 12, fontWeight: 500, color: "var(--ok)", textAlign: "center" }}>{completed}</div>
+            <div style={{ fontSize: 12, fontWeight: overdue > 0 ? 600 : 400, color: overdue > 0 ? "var(--bad)" : "var(--text-3)", textAlign: "center" }}>{overdue}</div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Dashboards ───────────────────────────────────────
 
 function SuperAdminDashboard() {
   const { data: overdueData } = trpc.reports.overdueByArea.useQuery();
   const { data: completionData } = trpc.reports.taskCompletionRate.useQuery({});
   const { data: tasksData } = trpc.tasks.list.useQuery({ page: 1, limit: 10 });
 
+  const tasks = tasksData?.tasks ?? [];
   const areas = overdueData ?? [];
   const rate = completionData?.completionRate ?? 0;
+  
+  const compColor = rate < 40 ? "var(--bad)" : rate <= 70 ? "var(--warn)" : "var(--ok)";
+  const overColor = (completionData?.overdue ?? 0) > 0 ? "var(--bad)" : "var(--text-3)";
+  const overLabel = (completionData?.overdue ?? 0) > 0 ? "var(--bad)" : "var(--text-3)";
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 style={{ fontSize: 18, fontWeight: 600, color: "var(--text-primary)" }}>
-          Panel Global
-        </h1>
-        <div className="flex gap-2">
-          <Link
-            href="/team"
-            className="flex items-center gap-1"
-            style={{
-              padding: "8px 12px",
-              borderRadius: "var(--radius-md)",
-              border: "1px solid var(--border-default)",
-              fontSize: 13,
-              fontWeight: 500,
-              color: "var(--text-secondary)",
-              transition: "all 0.15s",
-            }}
-          >
-            <Users className="h-4 w-4" />
-            Crear usuario
-          </Link>
-        </div>
-      </div>
+    <div style={{ display: "flex", flexDirection: "column" }}>
+      <SectionLabel>Métricas Globales — Abril 2026</SectionLabel>
+      <StatStrip stats={[
+        { label: "Total tareas", value: completionData?.total ?? 0, icon: Grid, color: "var(--text-1)" },
+        { label: "Completadas", value: completionData?.completed ?? 0, icon: Check, color: (completionData?.completed ?? 0) > 0 ? "var(--ok)" : "var(--text-3)" },
+        { label: "Vencidas", value: completionData?.overdue ?? 0, icon: AlertCircle, color: overColor, iconColor: overLabel },
+        { label: "Tasa global", value: `${Math.min(rate, 100)}%`, icon: TrendingUp, color: compColor }
+      ]} />
 
-      {/* Global KPIs */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <MetricCard
-          icon={<GridIcon size={20} style={{ color: "var(--info)" }} />}
-          label="Total tareas"
-          value={completionData?.total ?? 0}
-        />
-        <MetricCard
-          icon={<CheckCircle2 size={20} style={{ color: "var(--success)" }} />}
-          label="Completadas"
-          value={completionData?.completed ?? 0}
-        />
-        <MetricCard
-          icon={<AlertTriangle size={20} style={{ color: "var(--danger)" }} />}
-          label="Vencidas"
-          value={completionData?.overdue ?? 0}
-          urgent={(completionData?.overdue ?? 0) > 0}
-        />
-        <MetricCard
-          icon={<TrendingUp size={20} style={{ color: "var(--info)" }} />}
-          label="Tasa global"
-          value={`${rate}%`}
-          rateValue={rate}
-        />
-      </div>
+      <AreaHealthTable areas={areas} />
 
-      {/* Area health grid */}
-      <div>
-        <h2 style={{ marginBottom: 12, fontSize: 14, fontWeight: 600, color: "var(--text-secondary)" }}>
-          Salud por área
-        </h2>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-          {areas.map((area) => (
-            <Link
-              key={area.areaId}
-              href={`/areas/${area.areaId}`}
-              style={{
-                display: "block",
-                background: "var(--bg-surface)",
-                borderLeft: `3px solid ${area.color}`,
-                borderRadius: "var(--radius-md)",
-                padding: "12px 16px",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-1px)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
-            >
-              <div className="flex items-center gap-2">
-                <span
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: "100%",
-                    background: area.color,
-                    flexShrink: 0,
-                  }}
-                />
-                <h3 style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>
-                  {area.name}
-                </h3>
-              </div>
-              <div style={{ marginTop: 8 }}>
-                <span
-                  style={{
-                    fontSize: 12,
-                    color: area.overdueCount > 0 ? "var(--danger)" : "var(--text-muted)",
-                    fontWeight: area.overdueCount > 0 ? 600 : 400,
-                  }}
-                >
-                  {area.overdueCount} vencida{area.overdueCount !== 1 ? "s" : ""}
-                </span>
-              </div>
-            </Link>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: 24, marginBottom: 8 }}>
+        <SectionLabel>Actividad del proyecto</SectionLabel>
+        <div style={{ display: "flex", gap: 4 }}>
+          {["Todo", "Pendientes", "Vencidas"].map((f, i) => (
+            <button key={f} style={{
+              fontSize: 11, padding: "3px 9px", borderRadius: 4, cursor: "pointer",
+              border: i === 0 ? "1px solid var(--border)" : "1px solid transparent",
+              background: i === 0 ? "var(--surface)" : "transparent",
+              color: i === 0 ? "var(--text-1)" : "var(--text-3)",
+              fontWeight: i === 0 ? 500 : 400,
+              transition: "all .1s"
+            }}>
+              {f}
+            </button>
           ))}
         </div>
       </div>
-
-      {/* Recent activity */}
-      <div>
-        <h2 style={{ marginBottom: 12, fontSize: 14, fontWeight: 600, color: "var(--text-secondary)" }}>
-          Actividad reciente
-        </h2>
-        {(tasksData?.tasks ?? []).length === 0 ? (
-          <EmptyState
-            icon={<Activity size={48} style={{ color: "var(--info)" }} />}
-            title="Sin actividad reciente"
-            subtitle="Las acciones del equipo aparecerán aquí."
-          />
-        ) : (
-          <div className="space-y-2">
-            {(tasksData?.tasks ?? []).slice(0, 5).map((task) => (
-              <TaskCard key={task.id} task={task} compact />
-            ))}
-          </div>
-        )}
-      </div>
+      <CompactTaskList tasks={tasks} limit={10} />
     </div>
   );
 }
 
-// ─── AUDITOR Dashboard ───────────────────────────────
+function AdminAreaDashboard() {
+  const { data: completionData } = trpc.reports.taskCompletionRate.useQuery({});
+  const { data: tasksData } = trpc.tasks.list.useQuery({ page: 1, limit: 10 });
+
+  const tasks = tasksData?.tasks ?? [];
+  const rate = completionData?.completionRate ?? 0;
+  
+  const compColor = rate < 40 ? "var(--bad)" : rate <= 70 ? "var(--warn)" : "var(--ok)";
+  const overColor = (completionData?.overdue ?? 0) > 0 ? "var(--bad)" : "var(--text-3)";
+  const overLabel = (completionData?.overdue ?? 0) > 0 ? "var(--bad)" : "var(--text-3)";
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column" }}>
+      <SectionLabel>Visión del Área</SectionLabel>
+      <StatStrip stats={[
+        { label: "Total tareas", value: completionData?.total ?? 0, icon: Grid, color: "var(--text-1)" },
+        { label: "Completadas", value: completionData?.completed ?? 0, icon: Check, color: (completionData?.completed ?? 0) > 0 ? "var(--ok)" : "var(--text-3)" },
+        { label: "Vencidas", value: completionData?.overdue ?? 0, icon: AlertCircle, color: overColor, iconColor: overLabel },
+        { label: "Tasa completitud", value: `${Math.min(rate, 100)}%`, icon: TrendingUp, color: compColor }
+      ]} />
+
+      <SectionLabel>Tareas recientes</SectionLabel>
+      <CompactTaskList tasks={tasks} limit={10} />
+    </div>
+  );
+}
+
+function SupervisorDashboard() {
+  const { data: completionData } = trpc.reports.taskCompletionRate.useQuery({});
+  const { data: tasksData } = trpc.tasks.list.useQuery({ page: 1, limit: 15 });
+
+  const tasks = tasksData?.tasks ?? [];
+  const awaitingReview = tasks.filter(t => t.status === "AWAITING_REVIEW");
+  
+  const rate = completionData?.completionRate ?? 0;
+  const compColor = rate < 40 ? "var(--bad)" : rate <= 70 ? "var(--warn)" : "var(--ok)";
+  const overColor = (completionData?.overdue ?? 0) > 0 ? "var(--bad)" : "var(--text-3)";
+  const apvColor = awaitingReview.length > 0 ? "var(--accent)" : "var(--text-3)";
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column" }}>
+      <SectionLabel>Métricas operativas</SectionLabel>
+      <StatStrip stats={[
+        { label: "Aprob. pendientes", value: awaitingReview.length, icon: Clock, color: apvColor },
+        { label: "Vencidas", value: completionData?.overdue ?? 0, icon: AlertCircle, color: overColor, iconColor: overColor },
+        { label: "Completadas", value: completionData?.completed ?? 0, icon: Check, color: "var(--text-1)" },
+        { label: "Tasa éxito", value: `${Math.min(rate, 100)}%`, icon: TrendingUp, color: compColor }
+      ]} />
+
+      {awaitingReview.length > 0 && (
+        <>
+          <SectionLabel>Requieren revisión</SectionLabel>
+          <CompactTaskList tasks={awaitingReview} limit={5} />
+        </>
+      )}
+
+      <SectionLabel>Actividad de equipo</SectionLabel>
+      <CompactTaskList tasks={tasks.filter(t => t.status !== "AWAITING_REVIEW")} limit={10} />
+    </div>
+  );
+}
 
 function AuditorDashboard() {
-  const { data: completionData } = trpc.reports.taskCompletionRate.useQuery({});
   const { data: overdueData } = trpc.reports.overdueByArea.useQuery();
-
+  const { data: completionData } = trpc.reports.taskCompletionRate.useQuery({});
+  
+  const areas = overdueData ?? [];
   const rate = completionData?.completionRate ?? 0;
+  const compColor = rate < 40 ? "var(--bad)" : rate <= 70 ? "var(--warn)" : "var(--ok)";
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 style={{ fontSize: 18, fontWeight: 600, color: "var(--text-primary)" }}>
-          Panel de Auditoría
-        </h1>
-        <div className="flex gap-2">
-          <Link
-            href="/reports"
-            className="flex items-center gap-1"
-            style={{
-              padding: "8px 16px",
-              borderRadius: "var(--radius-md)",
-              background: "#4f46e5",
-              color: "white",
-              fontSize: 13,
-              fontWeight: 500,
-            }}
-          >
-            <BarChart3 className="h-4 w-4" />
-            Reportes completos
-          </Link>
-        </div>
-      </div>
+    <div style={{ display: "flex", flexDirection: "column" }}>
+      <SectionLabel>Resumen de auditoría</SectionLabel>
+      <StatStrip stats={[
+        { label: "Volumen", value: completionData?.total ?? 0, icon: Grid, color: "var(--text-1)" },
+        { label: "Riesgos (Vencidas)", value: completionData?.overdue ?? 0, icon: AlertCircle, color: (completionData?.overdue ?? 0) > 0 ? "var(--bad)" : "var(--text-3)" },
+        { label: "Cumplimiento", value: `${Math.min(rate, 100)}%`, icon: TrendingUp, color: compColor }
+      ]} />
 
-      {/* Summary */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <MetricCard
-          icon={<ListTodo size={20} style={{ color: "var(--info)" }} />}
-          label="Total tareas"
-          value={completionData?.total ?? 0}
-        />
-        <MetricCard
-          icon={<CheckCircle2 size={20} style={{ color: "var(--success)" }} />}
-          label="Completadas"
-          value={completionData?.completed ?? 0}
-        />
-        <MetricCard
-          icon={<AlertTriangle size={20} style={{ color: "var(--danger)" }} />}
-          label="Vencidas"
-          value={completionData?.overdue ?? 0}
-          urgent={(completionData?.overdue ?? 0) > 0}
-        />
-        <MetricCard
-          icon={<TrendingUp size={20} style={{ color: "var(--info)" }} />}
-          label="Completitud"
-          value={`${rate}%`}
-          rateValue={rate}
-        />
-      </div>
-
-      {/* Overdue by area table */}
-      <div
-        style={{
-          background: "var(--bg-surface)",
-          border: "1px solid var(--border-subtle)",
-          borderRadius: "var(--radius-lg)",
-          overflow: "hidden",
-        }}
-      >
-        <div style={{ borderBottom: "1px solid var(--border-subtle)", padding: "12px 16px" }}>
-          <h2 style={{ fontSize: 14, fontWeight: 600, color: "var(--text-secondary)" }}>
-            Tareas vencidas por área
-          </h2>
-        </div>
-        <div>
-          {(overdueData ?? []).map((area, i) => (
-            <div
-              key={area.areaId}
-              className="flex items-center justify-between"
-              style={{
-                padding: "12px 16px",
-                borderBottom: i < (overdueData?.length ?? 0) - 1 ? "1px solid var(--border-subtle)" : "none",
-              }}
-            >
-              <div className="flex items-center gap-2">
-                <span style={{ width: 10, height: 10, borderRadius: "100%", background: area.color }} />
-                <span style={{ fontSize: 14, color: "var(--text-secondary)" }}>{area.name}</span>
-              </div>
-              <span
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  minWidth: 28,
-                  padding: "2px 8px",
-                  borderRadius: "100px",
-                  fontSize: 12,
-                  fontWeight: 700,
-                  color: area.overdueCount === 0 ? "var(--success)" : "var(--danger)",
-                  background: area.overdueCount === 0 ? "var(--success-bg)" : "var(--danger-bg)",
-                }}
-              >
-                {area.overdueCount}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
+      <AreaHealthTable areas={areas} />
     </div>
   );
 }
 
-// ─── Reusable MetricCard ─────────────────────────────
-
-function MetricCard({
-  icon,
-  label,
-  value,
-  urgent,
-  rateValue,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: number | string;
-  urgent?: boolean;
-  rateValue?: number;
-}) {
-  // Dynamic color for rate
-  let valueColor = "var(--text-primary)";
-  if (rateValue !== undefined) {
-    if (rateValue <= 40) valueColor = "var(--danger)";
-    else if (rateValue <= 70) valueColor = "var(--warning)";
-    else valueColor = "var(--success)";
-  }
-  if (urgent) valueColor = "var(--danger)";
+function OperarioDashboard() {
+  const { data: tasksData, isLoading } = trpc.tasks.list.useQuery({ page: 1, limit: 15 });
+  const tasks = tasksData?.tasks ?? [];
+  const myTasks = tasks.filter(t => !["COMPLETED", "CANCELLED"].includes(t.status));
 
   return (
-    <div
-      style={{
-        background: urgent ? "var(--danger-bg)" : "var(--bg-surface)",
-        border: `1px solid ${urgent ? "rgba(248,113,113,0.20)" : "var(--border-subtle)"}`,
-        borderRadius: "var(--radius-lg)",
-        padding: 16,
-      }}
-    >
-      <div className="flex items-center gap-2">
-        {icon}
-        <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{label}</span>
-      </div>
-      <p
-        style={{
-          marginTop: 8,
-          fontSize: 28,
-          fontWeight: 700,
-          color: valueColor,
-          lineHeight: 1,
-        }}
-      >
-        {value}
-      </p>
+    <div style={{ display: "flex", flexDirection: "column" }}>
+      <SectionLabel>Mi trabajo</SectionLabel>
+      <StatStrip stats={[
+        { label: "Pendientes", value: myTasks.length, icon: Square, color: "var(--text-1)" },
+        { label: "Para hoy", value: myTasks.filter(t => {
+            if(!t.dueDate) return false;
+            const d = new Date(t.dueDate);
+            const today = new Date();
+            return d.getDate() === today.getDate() && d.getMonth() === today.getMonth();
+          }).length, icon: Clock, color: "var(--warn)" 
+        },
+        { label: "Aprobaciones", value: tasks.filter(t => t.status === "AWAITING_REVIEW").length, icon: CheckSquare, color: "var(--accent)" }
+      ]} />
+
+      <SectionLabel>Mis tareas activas</SectionLabel>
+      {isLoading ? <div className="skel" style={{ height: 200 }} /> : <CompactTaskList tasks={myTasks} limit={10} />}
     </div>
   );
 }
-
-// ─── Empty State ─────────────────────────────────────
-
-function EmptyState({
-  icon,
-  title,
-  subtitle,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  subtitle: string;
-}) {
-  return (
-    <div
-      className="flex flex-col items-center justify-center text-center"
-      style={{
-        background: "var(--bg-surface)",
-        border: "1px solid var(--border-subtle)",
-        borderRadius: "var(--radius-lg)",
-        padding: "40px 24px",
-      }}
-    >
-      {icon}
-      <p style={{ marginTop: 12, fontSize: 15, fontWeight: 600, color: "var(--text-primary)" }}>
-        {title}
-      </p>
-      <p style={{ marginTop: 4, fontSize: 13, color: "var(--text-muted)" }}>
-        {subtitle}
-      </p>
-    </div>
-  );
-}
-
-// ─── Loading Skeleton ────────────────────────────────
 
 function DashboardSkeleton() {
   return (
-    <div className="space-y-6">
-      <div className="nexus-skeleton" style={{ height: 160, borderRadius: "var(--radius-xl)" }} />
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="nexus-skeleton" style={{ height: 96, borderRadius: "var(--radius-lg)" }} />
-        ))}
-      </div>
-      <div className="space-y-3">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="nexus-skeleton" style={{ height: 80, borderRadius: "var(--radius-lg)" }} />
-        ))}
-      </div>
+    <div>
+      <div className="skel" style={{ height: 20, width: 100, marginBottom: 8, marginTop: 24 }} />
+      <div className="skel" style={{ height: 80, width: "100%", marginBottom: 32 }} />
+      <div className="skel" style={{ height: 20, width: 150, marginBottom: 8 }} />
+      <div className="skel" style={{ height: 300, width: "100%" }} />
     </div>
   );
 }

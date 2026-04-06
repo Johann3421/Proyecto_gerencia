@@ -1,150 +1,92 @@
 @import "tailwindcss";
 
 /* ═══════════════════════════════════════════════════════
-   NEXUS Design System — "Dark Refined" Theme
-   Inspired by Linear.app + Notion + Vercel Dashboard
+   NEXUS Design System — Linear / Vercel-inspired
+   Light, warm, dense, functional
    ═══════════════════════════════════════════════════════ */
 
 :root {
-  /* Backgrounds — 4 layered surfaces */
-  --bg-page:       #0a0a0f;
-  --bg-surface:    #111118;
-  --bg-elevated:   #1a1a24;
-  --bg-overlay:    #22222e;
+  --bg:           #f7f6f3;
+  --surface:      #ffffff;
+  --surface-alt:  #faf9f7;
+  --border:       #e8e6e0;
+  --border-light: #f0ede7;
 
-  /* Borders */
-  --border-subtle:  rgba(255,255,255,0.06);
-  --border-default: rgba(255,255,255,0.10);
-  --border-strong:  rgba(255,255,255,0.18);
+  --text-1:  #18181b;
+  --text-2:  #52525b;
+  --text-3:  #a1a1aa;
+  --text-4:  #d4d4d8;
 
-  /* Text */
-  --text-primary:   #f0f0f5;
-  --text-secondary: #9090a8;
-  --text-muted:     #5c5c7a;
-  --text-disabled:  #3a3a50;
+  --accent:       #5746ea;
+  --accent-hover: #4c3ed9;
 
-  /* Area accent colors */
-  --area-admin:     #818cf8;
-  --area-tech:      #38bdf8;
-  --area-comercial: #34d399;
-  --area-logistica: #fb923c;
-  --area-produccion:#f87171;
+  --ok:    #16a34a;
+  --warn:  #d97706;
+  --bad:   #dc2626;
 
-  /* Semantic colors */
-  --success:     #4ade80;
-  --success-bg:  rgba(74,222,128,0.08);
-  --warning:     #fbbf24;
-  --warning-bg:  rgba(251,191,36,0.08);
-  --danger:      #f87171;
-  --danger-bg:   rgba(248,113,113,0.08);
-  --info:        #60a5fa;
-  --info-bg:     rgba(96,165,250,0.08);
+  --area-1: #818cf8;
+  --area-2: #38bdf8;
+  --area-3: #34d399;
+  --area-4: #fb923c;
+  --area-5: #f87171;
 
-  /* Priority colors */
-  --priority-low:      #6b7280;
-  --priority-medium:   #60a5fa;
-  --priority-high:     #fbbf24;
-  --priority-critical: #f87171;
+  --r: 8px;
 
-  /* Status colors */
-  --status-pending:    #9090a8;
-  --status-progress:   #60a5fa;
-  --status-blocked:    #f87171;
-  --status-review:     #fbbf24;
-  --status-approved:   #4ade80;
-  --status-completed:  #4ade80;
-  --status-cancelled:  #3a3a50;
-  --status-rejected:   #f87171;
-
-  /* Radii */
-  --radius-sm:  6px;
-  --radius-md:  10px;
-  --radius-lg:  14px;
-  --radius-xl:  18px;
-
-  /* Primary accent */
-  --accent-primary: #4f46e5;
-  --accent-primary-hover: #4338ca;
-  --accent-secondary: #818cf8;
+  /* Sidebar */
+  --sidebar-bg: #18181b;
+  --sidebar-text: #a1a1aa;
+  --sidebar-text-active: #c4b5fd;
+  --sidebar-active-bg: rgba(87,70,234,0.18);
+  --sidebar-active-border: #7b72f8;
+  --sidebar-label: #52525b;
 }
 
 @theme inline {
-  --color-background: var(--bg-page);
-  --color-foreground: var(--text-primary);
+  --color-background: var(--bg);
+  --color-foreground: var(--text-1);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 /* ─── Base ─────────────────────────────────────────── */
 
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 body {
-  background: var(--bg-page);
-  color: var(--text-primary);
-  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text-1);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
 }
 
-/* ─── Skeleton animation ───────────────────────────── */
+/* ─── Scrollbar ────────────────────────────────────── */
 
-@keyframes nexus-pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.15; }
-}
-
-.nexus-skeleton {
-  background: var(--bg-elevated);
-  animation: nexus-pulse 1.5s ease-in-out infinite;
-  border-radius: var(--radius-md);
-}
-
-/* ─── Notification dot pulse ───────────────────────── */
-
-@keyframes notif-pulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.3); opacity: 0.7; }
-}
-
-.notif-dot-pulse {
-  animation: notif-pulse 2s ease-in-out infinite;
-}
-
-/* ─── Priority critical pulse ──────────────────────── */
-
-@keyframes priority-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-.priority-critical-pulse {
-  animation: priority-pulse 2s ease-in-out infinite;
-}
-
-/* ─── Scrollbar styling ────────────────────────────── */
-
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: var(--border-default);
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--border-strong);
-}
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-4); }
 
 /* ─── Selection ────────────────────────────────────── */
 
-::selection {
-  background: rgba(79, 70, 229, 0.3);
-  color: var(--text-primary);
-}
+::selection { background: rgba(87,70,234,0.15); color: var(--text-1); }
 
-/* ─── Focus rings ──────────────────────────────────── */
+/* ─── Focus ────────────────────────────────────────── */
 
 *:focus-visible {
-  outline: 2px solid var(--accent-secondary);
-  outline-offset: 2px;
+  outline: 1.5px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* ─── Skeleton ─────────────────────────────────────── */
+
+@keyframes skel-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 0.25; }
+}
+.skel {
+  background: var(--border-light);
+  animation: skel-pulse 1.4s ease-in-out infinite;
+  border-radius: var(--r);
 }

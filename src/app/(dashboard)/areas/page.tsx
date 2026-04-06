@@ -8,14 +8,13 @@ import {
   TrendingUp,
   Package,
   Factory,
-  ArrowRight,
   type LucideIcon,
+  Search,
 } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
+import { useUIStore } from "@/store/ui-store";
 
-// ─── BUG 1 FIX: Dynamic icon lookup ──────────────────
-// The DB stores icon names as strings (e.g. "building-2").
-// This map resolves them to actual Lucide components.
 const AREA_ICONS: Record<string, LucideIcon> = {
   "building-2": Building2,
   "cpu": Cpu,
@@ -29,192 +28,87 @@ function getAreaIcon(iconName: string | undefined): LucideIcon {
   return AREA_ICONS[iconName] ?? Building2;
 }
 
-// Format period "2026-04" → "Abr 2026"
-function formatPeriod(period: string): string {
-  const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-  const [year, month] = period.split("-");
-  const monthIndex = parseInt(month, 10) - 1;
-  if (monthIndex < 0 || monthIndex > 11) return period;
-  return `${months[monthIndex]} ${year}`;
-}
-
 export default function AreasPage() {
   const { data: session } = useSession();
   const { data: kpis, isLoading } = trpc.reports.areaKPIs.useQuery({});
+  const [search, setSearch] = useState("");
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div>
-          <div className="nexus-skeleton" style={{ width: 120, height: 24, marginBottom: 8 }} />
-          <div className="nexus-skeleton" style={{ width: 260, height: 16 }} />
-        </div>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="nexus-skeleton" style={{ height: 200, borderRadius: "var(--radius-lg)" }} />
-          ))}
-        </div>
+      <div>
+        <div className="skel" style={{ height: 40, width: 250, marginBottom: 24 }} />
+        <div className="skel" style={{ height: 300, width: "100%" }} />
       </div>
     );
   }
 
+  const areas = kpis ?? [];
+  const filteredAreas = areas.filter(a => a.area?.name.toLowerCase().includes(search.toLowerCase()));
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 style={{ fontSize: 18, fontWeight: 600, color: "var(--text-primary)" }}>
-          Áreas
-        </h1>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 2 }}>
-          Organigrama y estado operacional por área
-        </p>
+    <div style={{ display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+        <div style={{ position: "relative", width: 250 }}>
+          <Search size={14} color="var(--text-3)" style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)" }} />
+          <input 
+            type="text" 
+            placeholder="Buscar área..." 
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{ 
+              width: "100%", height: 32, paddingLeft: 30, paddingRight: 10,
+              fontSize: 13, background: "var(--surface)", border: "1px solid var(--border)",
+              borderRadius: "var(--r)", outline: "none", color: "var(--text-1)"
+            }} 
+          />
+        </div>
       </div>
 
-      {/* Area grid */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {kpis?.map((kpi) => {
-          // BUG 2 FIX: Clamp completion rate to 100% max
-          const completionRate = kpi.totalTasks > 0
-            ? Math.min(Math.round((kpi.completed / kpi.totalTasks) * 100), 100)
-            : 0;
-
+      <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--r)", overflow: "hidden" }}>
+        {/* Header */}
+        <div style={{ display: "grid", gridTemplateColumns: "180px 1fr 90px 80px 80px", padding: "8px 14px", background: "var(--surface-alt)", borderBottom: "1px solid var(--border-light)", fontSize: 10.5, fontWeight: 500, color: "var(--text-3)", letterSpacing: "0.3px", textTransform: "uppercase" }}>
+          <div>Área</div>
+          <div>Progreso del mes</div>
+          <div style={{ textAlign: "center" }}>Total</div>
+          <div style={{ textAlign: "center" }}>Listas</div>
+          <div style={{ textAlign: "center" }}>Vencidas</div>
+        </div>
+        
+        {/* Rows */}
+        {filteredAreas.length === 0 ? (
+          <div style={{ padding: 32, textAlign: "center", color: "var(--text-3)", fontSize: 13 }}>
+            No se encontraron áreas.
+          </div>
+        ) : filteredAreas.map((kpi, i) => {
+          const rate = kpi.totalTasks > 0 ? Math.min(Math.round((kpi.completed / kpi.totalTasks) * 100), 100) : 0;
+          const total = kpi.totalTasks;
+          const completed = kpi.completed;
+          const overdue = kpi.overdue;
+          
+          const isBad = overdue > 0;
           const areaColor = kpi.area?.color ?? "#818cf8";
-          const IconComponent = getAreaIcon(kpi.area?.icon);
-
+          
           return (
-            <Link
-              key={kpi.id}
-              href={`/areas/${kpi.areaId}`}
-              className="group block"
-              style={{
-                background: "var(--bg-surface)",
-                border: "1px solid var(--border-subtle)",
-                borderRadius: "var(--radius-lg)",
-                padding: 20,
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = `${areaColor}4D`;
-                e.currentTarget.style.transform = "translateY(-1px)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "var(--border-subtle)";
-                e.currentTarget.style.transform = "translateY(0)";
-              }}
-            >
-              {/* Area header */}
-              <div className="mb-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div
-                    className="flex items-center justify-center"
-                    style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: "var(--radius-md)",
-                      backgroundColor: `${areaColor}1F`,
-                    }}
-                  >
-                    <IconComponent size={18} style={{ color: areaColor }} />
-                  </div>
-                  <div>
-                    <h3 style={{ fontSize: 16, fontWeight: 600, color: "var(--text-primary)" }}>
-                      {kpi.area?.name ?? "Área"}
-                    </h3>
-                    <p style={{ fontSize: 12, color: "var(--text-muted)" }}>
-                      {formatPeriod(kpi.period)}
-                    </p>
-                  </div>
-                </div>
-                <ArrowRight
-                  size={16}
-                  style={{ color: "var(--text-muted)", transition: "all 0.2s ease" }}
-                  className="group-hover:translate-x-1"
-                />
+            <Link key={kpi.id} href={`/areas/${kpi.areaId}`} style={{ display: "grid", gridTemplateColumns: "180px 1fr 90px 80px 80px", alignItems: "center", padding: "10px 14px", borderBottom: i < filteredAreas.length - 1 ? "1px solid var(--border-light)" : "none", background: isBad ? "#fef2f2" : "transparent", textDecoration: "none", transition: "background 0.1s" }} onMouseEnter={e => { if(!isBad) e.currentTarget.style.background = "var(--surface-alt)" }} onMouseLeave={e => { if(!isBad) e.currentTarget.style.background = "transparent" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ width: 8, height: 8, borderRadius: "50%", background: areaColor }} />
+                <span style={{ fontSize: 13, fontWeight: 500, color: "var(--text-1)" }}>{kpi.area?.name}</span>
               </div>
-
-              {/* Completion bar */}
-              <div className="mb-3">
-                <div className="mb-1 flex items-center justify-between">
-                  <span style={{ fontSize: 12, color: "var(--text-muted)" }}>Completado</span>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: areaColor }}>
-                    {completionRate}%
-                  </span>
+              
+              <div style={{ display: "flex", alignItems: "center", paddingRight: 20 }}>
+                <div style={{ flex: 1, height: 4, background: "#f0ede7", borderRadius: 2, marginRight: 8, overflow: "hidden" }}>
+                  <div style={{ height: "100%", background: areaColor, width: `${rate}%` }} />
                 </div>
-                <div
-                  style={{
-                    height: 4,
-                    background: "var(--bg-elevated)",
-                    borderRadius: "100px",
-                    overflow: "hidden",
-                  }}
-                >
-                  <div
-                    style={{
-                      height: "100%",
-                      width: `${Math.min(completionRate, 100)}%`,
-                      background: `linear-gradient(90deg, ${areaColor}99, ${areaColor})`,
-                      borderRadius: "100px",
-                      transition: "width 0.6s ease",
-                    }}
-                  />
-                </div>
+                <span style={{ fontSize: 11, fontWeight: 600, color: areaColor, whiteSpace: "nowrap", width: 28 }}>{rate}%</span>
               </div>
-
-              {/* Stats row */}
-              <div
-                className="grid grid-cols-3 gap-2"
-                style={{
-                  background: "var(--bg-elevated)",
-                  borderRadius: "var(--radius-md)",
-                  padding: "10px 8px",
-                }}
-              >
-                <div className="text-center">
-                  <div style={{ fontSize: 20, fontWeight: 600, color: "var(--text-primary)" }}>
-                    {kpi.totalTasks}
-                  </div>
-                  <div style={{ fontSize: 11, color: "var(--text-muted)" }}>Total</div>
-                </div>
-                <div className="text-center">
-                  <div style={{ fontSize: 20, fontWeight: 600, color: "var(--success)" }}>
-                    {kpi.completed}
-                  </div>
-                  <div style={{ fontSize: 11, color: "var(--text-muted)" }}>Completadas</div>
-                </div>
-                <div className="text-center">
-                  <div style={{
-                    fontSize: 20,
-                    fontWeight: 600,
-                    color: kpi.overdue > 0 ? "var(--danger)" : "var(--text-muted)",
-                  }}>
-                    {kpi.overdue}
-                  </div>
-                  <div style={{ fontSize: 11, color: "var(--text-muted)" }}>Vencidas</div>
-                </div>
-              </div>
+              
+              <div style={{ fontSize: 12, fontWeight: 500, color: "var(--text-2)", textAlign: "center" }}>{total}</div>
+              <div style={{ fontSize: 12, fontWeight: 500, color: "var(--ok)", textAlign: "center" }}>{completed}</div>
+              <div style={{ fontSize: 12, fontWeight: overdue > 0 ? 600 : 400, color: overdue > 0 ? "var(--bad)" : "var(--text-3)", textAlign: "center" }}>{overdue}</div>
             </Link>
           );
         })}
       </div>
-
-      {(!kpis || kpis.length === 0) && (
-        <div
-          className="flex flex-col items-center justify-center"
-          style={{
-            background: "var(--bg-surface)",
-            border: "1px solid var(--border-subtle)",
-            borderRadius: "var(--radius-lg)",
-            padding: 48,
-          }}
-        >
-          <Building2 size={48} style={{ color: "var(--text-muted)", marginBottom: 12 }} />
-          <p style={{ fontSize: 14, fontWeight: 500, color: "var(--text-secondary)" }}>
-            No hay áreas configuradas
-          </p>
-          <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>
-            Contacta al administrador para agregar áreas al sistema.
-          </p>
-        </div>
-      )}
     </div>
   );
 }

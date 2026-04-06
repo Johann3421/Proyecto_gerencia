@@ -3,113 +3,116 @@
 import { useSession, signOut } from "next-auth/react";
 import { useUIStore } from "@/store/ui-store";
 import { trpc } from "@/lib/trpc-client";
+import { usePathname } from "next/navigation";
 import { Bell, Menu, LogOut } from "lucide-react";
-import Link from "next/link";
+
+const PAGE_TITLES: Record<string, string> = {
+  "/": "Dashboard",
+  "/tasks": "Tareas",
+  "/areas": "Áreas",
+  "/team": "Equipo",
+  "/reports": "Reportes",
+  "/approvals": "Aprobaciones",
+  "/settings": "Configuración",
+};
+
+function getPageTitle(pathname: string): string {
+  if (PAGE_TITLES[pathname]) return PAGE_TITLES[pathname];
+  if (pathname.startsWith("/tasks/new")) return "Nueva tarea";
+  if (pathname.startsWith("/tasks/")) return "Detalle de tarea";
+  if (pathname.startsWith("/areas/")) return "Detalle de área";
+  if (pathname.startsWith("/settings")) return "Configuración";
+  return "NEXUS";
+}
 
 export function Topbar() {
   const { data: session } = useSession();
   const { toggleSidebar, setNotificationDrawerOpen } = useUIStore();
+  const pathname = usePathname();
 
   const { data: unreadCount } = trpc.notifications.unreadCount.useQuery(undefined, {
     enabled: !!session?.user,
     refetchInterval: 30000,
   });
 
-  const hasNotifs = unreadCount !== undefined && unreadCount > 0;
+  const hasNotifs = (unreadCount ?? 0) > 0;
 
   return (
     <header
-      className="sticky top-0 z-30 flex items-center justify-between px-4 lg:px-6"
       style={{
-        height: 56,
-        background: "var(--bg-page)",
-        borderBottom: "1px solid var(--border-subtle)",
+        height: 48,
+        background: "var(--surface)",
+        borderBottom: "1px solid var(--border)",
+        padding: "0 20px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        position: "sticky",
+        top: 0,
+        zIndex: 30,
       }}
     >
-      {/* Left: hamburger + mobile logo */}
-      <div className="flex items-center gap-3">
+      {/* Left */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <button
           onClick={toggleSidebar}
-          className="rounded-md p-2 lg:hidden"
-          style={{ color: "var(--text-secondary)" }}
-          aria-label="Toggle menu"
+          className="lg:hidden"
+          style={{ color: "var(--text-2)", padding: 4 }}
+          aria-label="Menu"
         >
-          <Menu className="h-5 w-5" />
+          <Menu size={18} />
         </button>
-
-        {/* Mobile logo */}
-        <Link href="/" className="flex items-center gap-2 lg:hidden">
-          <div
-            className="flex h-7 w-7 items-center justify-center text-white text-xs font-bold"
-            style={{ background: "#4f46e5", borderRadius: "var(--radius-md)" }}
-          >
-            N
-          </div>
-        </Link>
+        <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-1)" }}>
+          {getPageTitle(pathname)}
+        </span>
       </div>
 
-      {/* Right: notification bell + user menu */}
-      <div className="flex items-center gap-2">
-        {/* Notification bell */}
+      {/* Right */}
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        {/* Bell */}
         <button
           onClick={() => setNotificationDrawerOpen(true)}
-          className="relative rounded-md p-2"
-          style={{ color: "var(--text-secondary)", transition: "color 0.15s" }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = "var(--text-primary)"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-secondary)"; }}
-          aria-label={hasNotifs ? `${unreadCount} notificaciones sin leer` : "Notificaciones"}
-          title={hasNotifs ? `${unreadCount} notificaciones sin leer` : "Notificaciones"}
+          style={{
+            position: "relative",
+            padding: 6,
+            color: "var(--text-3)",
+            borderRadius: 4,
+            transition: "color .1s",
+          }}
+          onMouseEnter={e => { e.currentTarget.style.color = "var(--text-2)"; }}
+          onMouseLeave={e => { e.currentTarget.style.color = "var(--text-3)"; }}
+          aria-label="Notificaciones"
         >
-          <Bell className="h-5 w-5" />
+          <Bell size={15} />
           {hasNotifs && (
-            <span
-              className="notif-dot-pulse"
-              style={{
-                position: "absolute",
-                top: 6,
-                right: 6,
-                width: 6,
-                height: 6,
-                borderRadius: "50%",
-                background: "var(--danger)",
-              }}
-            />
+            <span style={{
+              position: "absolute", top: 3, right: 3,
+              width: 5, height: 5, borderRadius: "50%",
+              background: "var(--bad)",
+            }} />
           )}
         </button>
 
-        {/* User avatar / menu */}
+        {/* Avatar */}
         {session?.user && (
-          <div className="flex items-center gap-2">
-            <Link
-              href="/settings/profile"
-              className="flex items-center justify-center text-white text-xs font-bold"
+          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <div
               style={{
-                width: 32,
-                height: 32,
-                borderRadius: "100%",
-                background: "#4f46e5",
-                border: "1px solid rgba(255,255,255,0.15)",
-                transition: "box-shadow 0.15s",
+                width: 24, height: 24, borderRadius: "50%",
+                background: "var(--accent)", color: "#fff",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 9, fontWeight: 700,
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow = "0 0 0 2px rgba(129,140,248,0.5)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = "none";
-              }}
-              title={session.user.name ?? "Perfil"}
             >
               {session.user.name?.charAt(0).toUpperCase()}
-            </Link>
+            </div>
             <button
               onClick={() => signOut({ callbackUrl: "/auth/login" })}
-              className="hidden sm:block rounded-md p-2"
-              style={{ color: "var(--text-muted)", transition: "color 0.15s" }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = "var(--text-secondary)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-muted)"; }}
+              className="hidden sm:block"
+              style={{ color: "var(--text-4)", padding: 4 }}
               aria-label="Cerrar sesión"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut size={13} />
             </button>
           </div>
         )}
