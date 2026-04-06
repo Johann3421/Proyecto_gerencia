@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { loginSchema } from "@/lib/validations";
 import type { RoleType } from "@prisma/client";
+import { authConfig } from "@/lib/auth.config";
 
 declare module "next-auth" {
   interface Session {
@@ -38,10 +39,8 @@ declare module "next-auth" {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  ...authConfig,
   session: { strategy: "jwt" },
-  pages: {
-    signIn: "/auth/login",
-  },
   providers: [
     Credentials({
       name: "credentials",
@@ -110,15 +109,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       session.user.departmentId = token.departmentId as string | null;
       session.user.avatar = token.avatar as string | null;
       return session;
-    },
-    authorized({ auth, request: { nextUrl } }) {
-      const isLoggedIn = !!auth?.user;
-      const isOnLogin = nextUrl.pathname.startsWith("/auth");
-      if (isOnLogin) {
-        if (isLoggedIn) return Response.redirect(new URL("/", nextUrl));
-        return true;
-      }
-      return isLoggedIn;
     },
   },
 });
