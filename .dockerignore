@@ -1,0 +1,41 @@
+# Dependencias
+node_modules
+npm-debug.log*
+
+# Build outputs
+.next
+out
+build
+
+# Archivos de entorno (NUNCA incluir en imagen)
+.env
+.env.*
+!.env.example
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Prisma — no incluir migraciones locales de dev
+prisma/dev.db
+prisma/dev.db-journal
+
+# Editor y OS
+.DS_Store
+.vscode
+.idea
+*.pem
+Thumbs.db
+
+# Testing
+coverage
+.nyc_output
+
+# Logs
+*.log
+
+# Documentación y extras que no afectan el build
+DEPLOY.md
+README.md
+*.md
