@@ -3,6 +3,7 @@ import type { NextAuthConfig } from "next-auth";
 // Configuración mínima para el middleware (compatible con Edge Runtime).
 // NO importar bcryptjs, Prisma, ni ningún módulo Node.js aquí.
 export const authConfig = {
+  trustHost: true,
   pages: {
     signIn: "/auth/login",
   },
