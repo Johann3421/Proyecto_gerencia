@@ -28,7 +28,7 @@ services:
     container_name: nexus_app
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3001:3000"
     environment:
       # Base de datos (apunta al servicio postgres de este compose)
       DATABASE_URL: "postgresql://nexus:${POSTGRES_PASSWORD}@postgres:5432/nexus?schema=public"

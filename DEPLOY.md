@@ -82,7 +82,7 @@ UPLOADTHING_APP_ID=
 3. Rellena:
    - **Host**: `nexus.tudominio.com`
    - **Service Name**: `app`  *(nombre del servicio en docker-compose.yml)*
-   - **Port**: `3000`
+   - **Port**: `3001`
    - **HTTPS**: activa **Certificate** → `Let's Encrypt` para SSL automático
 4. Haz clic en **Save**
 
