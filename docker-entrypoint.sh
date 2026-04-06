@@ -6,7 +6,7 @@ echo "  NEXUS – Iniciando contenedor"
 echo "──────────────────────────────────────────"
 
 echo "▶ Sincronizando esquema con la base de datos..."
-node_modules/.bin/prisma db push --skip-generate
+node_modules/.bin/prisma db push
 echo "✅ Base de datos lista"
 
 echo "▶ Iniciando servidor Next.js..."
