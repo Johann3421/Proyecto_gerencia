@@ -1,17 +1,15 @@
 "use client";
 
 import { trpc } from "@/lib/trpc-client";
-import { useSession } from "next-auth/react";
+
 import {
-  CheckCircle,
+  ShieldCheck,
   Clock,
-  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import { formatRelativeDate } from "@/lib/utils";
 
 export default function ApprovalsPage() {
-  const { data: session } = useSession();
 
   const { data: tasks, isLoading } = trpc.tasks.list.useQuery({
     status: "AWAITING_REVIEW",
@@ -22,8 +20,16 @@ export default function ApprovalsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+      <div className="space-y-6">
+        <div>
+          <div className="nexus-skeleton" style={{ width: 150, height: 24, marginBottom: 8 }} />
+          <div className="nexus-skeleton" style={{ width: 220, height: 16 }} />
+        </div>
+        <div className="space-y-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="nexus-skeleton" style={{ height: 100, borderRadius: "var(--radius-lg)" }} />
+          ))}
+        </div>
       </div>
     );
   }
@@ -31,22 +37,30 @@ export default function ApprovalsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-zinc-900 dark:text-white">
+        <h1 style={{ fontSize: 18, fontWeight: 600, color: "var(--text-primary)" }}>
           Aprobaciones
         </h1>
-        <p className="text-sm text-zinc-500">
+        <p style={{ fontSize: 14, color: "var(--text-muted)" }}>
           {pendingTasks.length} tareas esperando revisión
         </p>
       </div>
 
       {pendingTasks.length === 0 ? (
-        <div className="rounded-2xl border border-zinc-200 bg-white p-12 text-center dark:border-zinc-800 dark:bg-zinc-950">
-          <CheckCircle className="mx-auto mb-3 h-8 w-8 text-emerald-400" />
-          <p className="font-medium text-zinc-600 dark:text-zinc-400">
-            No hay aprobaciones pendientes
+        <div
+          className="flex flex-col items-center justify-center text-center"
+          style={{
+            background: "var(--bg-surface)",
+            border: "1px solid var(--border-subtle)",
+            borderRadius: "var(--radius-lg)",
+            padding: 48,
+          }}
+        >
+          <ShieldCheck size={48} style={{ color: "var(--success)", marginBottom: 12 }} />
+          <p style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)" }}>
+            Sin pendientes
           </p>
-          <p className="mt-1 text-sm text-zinc-400">
-            Las solicitudes aparecerán aquí
+          <p style={{ marginTop: 4, fontSize: 13, color: "var(--text-muted)" }}>
+            No hay solicitudes esperando tu revisión.
           </p>
         </div>
       ) : (
@@ -54,39 +68,64 @@ export default function ApprovalsPage() {
           {pendingTasks.map((task) => (
             <div
               key={task.id}
-              className="rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950"
+              style={{
+                background: "var(--bg-surface)",
+                border: "1px solid var(--border-subtle)",
+                borderLeft: "3px solid var(--warning)",
+                borderRadius: "var(--radius-lg)",
+                padding: 16,
+              }}
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
                   <Link
                     href={`/tasks/${task.id}`}
-                    className="font-medium text-zinc-900 hover:text-indigo-600 dark:text-white dark:hover:text-indigo-400"
+                    style={{ fontWeight: 500, color: "var(--text-primary)", transition: "color 0.15s" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.color = "#818cf8"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-primary)"; }}
                   >
                     {task.title}
                   </Link>
-                  <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-zinc-500">
+                  <div className="mt-2 flex flex-wrap items-center gap-2" style={{ fontSize: 12 }}>
                     {task.assignedTo && (
-                      <span className="flex items-center gap-1">
-                        <span className="flex h-4 w-4 items-center justify-center rounded-full bg-indigo-100 text-[8px] font-bold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
+                      <span className="flex items-center gap-1" style={{ color: "var(--text-secondary)" }}>
+                        <span
+                          className="flex items-center justify-center text-white font-bold"
+                          style={{
+                            width: 16,
+                            height: 16,
+                            borderRadius: "100%",
+                            background: "#4f46e5",
+                            fontSize: 8,
+                          }}
+                        >
                           {task.assignedTo.name?.[0]}
                         </span>
                         {task.assignedTo.name}
                       </span>
                     )}
                     {task.area && (
-                      <span className="rounded-full bg-zinc-100 px-2 py-0.5 dark:bg-zinc-800">
+                      <span
+                        style={{
+                          padding: "2px 8px",
+                          borderRadius: "100px",
+                          fontSize: 11,
+                          color: task.area.color,
+                          background: `${task.area.color}1F`,
+                        }}
+                      >
                         {task.area.name}
                       </span>
                     )}
                     {task.dueDate && (
-                      <span className="flex items-center gap-1">
+                      <span className="flex items-center gap-1" style={{ color: "var(--text-muted)" }}>
                         <Clock className="h-3 w-3" />
                         {formatRelativeDate(new Date(task.dueDate))}
                       </span>
                     )}
                   </div>
                   {task.description && (
-                    <p className="mt-2 line-clamp-2 text-xs text-zinc-400">
+                    <p className="line-clamp-2" style={{ marginTop: 8, fontSize: 12, color: "var(--text-muted)" }}>
                       {task.description}
                     </p>
                   )}
@@ -96,7 +135,15 @@ export default function ApprovalsPage() {
                 <div className="flex shrink-0 gap-2">
                   <Link
                     href={`/tasks/${task.id}`}
-                    className="flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-indigo-700"
+                    className="flex items-center gap-1.5"
+                    style={{
+                      padding: "8px 16px",
+                      borderRadius: "var(--radius-md)",
+                      background: "#4f46e5",
+                      color: "white",
+                      fontSize: 13,
+                      fontWeight: 500,
+                    }}
                   >
                     Revisar
                   </Link>

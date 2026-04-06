@@ -4,12 +4,13 @@ import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { trpc } from "@/lib/trpc-client";
 import { cn, formatRelativeDate, formatDueDate } from "@/lib/utils";
-import { STATUS_CONFIG, PRIORITY_CONFIG, ROLE_LABELS } from "@/types";
+import { STATUS_CONFIG } from "@/types";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { PriorityBadge } from "@/components/ui/PriorityBadge";
 import { usePermissions } from "@/hooks/use-permissions";
 import { useState } from "react";
 import {
   ArrowLeft,
-  Calendar,
   User,
   MessageSquare,
   Paperclip,
@@ -18,7 +19,6 @@ import {
   XCircle,
   Clock,
   PlayCircle,
-  AlertTriangle,
   GitBranch,
   Image,
   FileText,
@@ -29,8 +29,8 @@ import Link from "next/link";
 export default function TaskDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { data: session } = useSession();
-  const { can, isRole } = usePermissions();
+  useSession();
+  const { can } = usePermissions();
   const [commentText, setCommentText] = useState("");
   const [activeTab, setActiveTab] = useState<"timeline" | "evidence">("timeline");
 
@@ -67,17 +67,15 @@ export default function TaskDetailPage() {
   if (!task) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-20">
-        <XCircle className="h-12 w-12 text-zinc-300" />
-        <p className="text-sm text-zinc-500">Tarea no encontrada</p>
-        <Link href="/tasks" className="text-sm text-indigo-600 hover:underline">
+        <XCircle size={48} style={{ color: "var(--text-muted)" }} />
+        <p style={{ fontSize: 14, color: "var(--text-muted)" }}>Tarea no encontrada</p>
+        <Link href="/tasks" style={{ fontSize: 14, color: "#818cf8" }} className="hover:underline">
           Volver a tareas
         </Link>
       </div>
     );
   }
 
-  const statusCfg = STATUS_CONFIG[task.status];
-  const priorityCfg = PRIORITY_CONFIG[task.priority];
   const due = formatDueDate(task.dueDate);
   const pendingApproval = task.approvals.find((a) => a.status === "PENDING");
 
@@ -90,7 +88,6 @@ export default function TaskDetailPage() {
     if (!commentText.trim()) return;
 
     // Extract @mentions (simple userId detection)
-    const mentionPattern = /@(\w+)/g;
     addComment.mutate({
       taskId: task!.id,
       content: commentText,
@@ -111,28 +108,20 @@ export default function TaskDetailPage() {
       <div className="flex items-center gap-3">
         <button
           onClick={() => router.back()}
-          className="rounded-lg p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+          className="rounded-lg p-2"
+          style={{ color: "var(--text-secondary)" }}
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
         <div className="flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span
-              className={cn("rounded-full px-2 py-0.5 text-[10px] font-semibold", priorityCfg.bgColor, priorityCfg.color,
-                task.priority === "CRITICAL" && "animate-pulse"
-              )}
-            >
-              {task.priority === "CRITICAL" && <AlertTriangle className="mr-1 inline h-3 w-3" />}
-              {priorityCfg.label}
-            </span>
-            <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-medium", statusCfg.bgColor, statusCfg.color)}>
-              {statusCfg.label}
-            </span>
-            <span className="rounded-full px-2 py-0.5 text-[10px] font-medium text-white" style={{ backgroundColor: task.area.color }}>
+            <PriorityBadge priority={task.priority} />
+            <StatusBadge status={task.status} />
+            <span style={{ padding: "3px 8px", borderRadius: "100px", fontSize: 10, fontWeight: 500, color: task.area.color, backgroundColor: `${task.area.color}1F` }}>
               {task.area.name}
             </span>
           </div>
-          <h1 className="mt-1 text-lg font-bold text-zinc-900 dark:text-white">
+          <h1 style={{ marginTop: 4, fontSize: 18, fontWeight: 700, color: "var(--text-primary)" }}>
             {task.title}
           </h1>
         </div>
@@ -144,11 +133,11 @@ export default function TaskDetailPage() {
         <div className="space-y-6 lg:col-span-2">
           {/* Description */}
           {task.description && (
-            <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
-              <h2 className="mb-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+            <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border-subtle)", borderRadius: "var(--radius-lg)", padding: 16 }}>
+              <h2 style={{ marginBottom: 8, fontSize: 14, fontWeight: 600, color: "var(--text-secondary)" }}>
                 Descripción
               </h2>
-              <p className="whitespace-pre-wrap text-sm text-zinc-600 dark:text-zinc-400">
+              <p className="whitespace-pre-wrap" style={{ fontSize: 14, color: "var(--text-secondary)" }}>
                 {task.description}
               </p>
             </div>
@@ -156,13 +145,13 @@ export default function TaskDetailPage() {
 
           {/* Pending approval banner */}
           {pendingApproval && can("approvals", "resolve") && (
-            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900 dark:bg-amber-950/30">
-              <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
+            <div style={{ background: "var(--warning-bg)", border: "1px solid rgba(251,191,36,0.20)", borderRadius: "var(--radius-lg)", padding: 16 }}>
+              <div className="flex items-center gap-2" style={{ color: "var(--warning)" }}>
                 <Shield className="h-5 w-5" />
-                <span className="text-sm font-semibold">Aprobación pendiente</span>
+                <span style={{ fontSize: 14, fontWeight: 600 }}>Aprobación pendiente</span>
               </div>
               {pendingApproval.notes && (
-                <p className="mt-2 text-sm text-amber-600 dark:text-amber-300">
+                <p style={{ marginTop: 8, fontSize: 14, color: "var(--warning)" }}>
                   {pendingApproval.notes}
                 </p>
               )}
@@ -170,7 +159,8 @@ export default function TaskDetailPage() {
                 <button
                   onClick={() => handleApproval("APPROVED")}
                   disabled={resolveApproval.isPending}
-                  className="flex items-center gap-1 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+                  className="flex items-center gap-1"
+                  style={{ padding: "8px 16px", borderRadius: "var(--radius-md)", background: "var(--success)", color: "#000", fontSize: 12, fontWeight: 500, opacity: resolveApproval.isPending ? 0.5 : 1 }}
                 >
                   <CheckCircle2 className="h-4 w-4" />
                   Aprobar
@@ -178,7 +168,8 @@ export default function TaskDetailPage() {
                 <button
                   onClick={() => handleApproval("REJECTED")}
                   disabled={resolveApproval.isPending}
-                  className="flex items-center gap-1 rounded-lg bg-red-600 px-4 py-2 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                  className="flex items-center gap-1"
+                  style={{ padding: "8px 16px", borderRadius: "var(--radius-md)", background: "var(--danger)", color: "#fff", fontSize: 12, fontWeight: 500, opacity: resolveApproval.isPending ? 0.5 : 1 }}
                 >
                   <XCircle className="h-4 w-4" />
                   Rechazar
@@ -188,27 +179,27 @@ export default function TaskDetailPage() {
           )}
 
           {/* Tab bar */}
-          <div className="flex border-b border-zinc-200 dark:border-zinc-800">
+          <div className="flex" style={{ borderBottom: "1px solid var(--border-subtle)" }}>
             <button
               onClick={() => setActiveTab("timeline")}
-              className={cn(
-                "flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors",
-                activeTab === "timeline"
-                  ? "border-indigo-600 text-indigo-600"
-                  : "border-transparent text-zinc-500 hover:text-zinc-700"
-              )}
+              className="flex items-center gap-1.5 px-4 py-2.5"
+              style={{
+                fontSize: 14, fontWeight: 500, transition: "all 0.15s",
+                borderBottom: activeTab === "timeline" ? "2px solid #818cf8" : "2px solid transparent",
+                color: activeTab === "timeline" ? "#818cf8" : "var(--text-muted)",
+              }}
             >
               <MessageSquare className="h-4 w-4" />
               Timeline ({task.logs.length + task.comments.length})
             </button>
             <button
               onClick={() => setActiveTab("evidence")}
-              className={cn(
-                "flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors",
-                activeTab === "evidence"
-                  ? "border-indigo-600 text-indigo-600"
-                  : "border-transparent text-zinc-500 hover:text-zinc-700"
-              )}
+              className="flex items-center gap-1.5 px-4 py-2.5"
+              style={{
+                fontSize: 14, fontWeight: 500, transition: "all 0.15s",
+                borderBottom: activeTab === "evidence" ? "2px solid #818cf8" : "2px solid transparent",
+                color: activeTab === "evidence" ? "#818cf8" : "var(--text-muted)",
+              }}
             >
               <Paperclip className="h-4 w-4" />
               Evidencias ({task.evidence.length})
@@ -363,8 +354,8 @@ export default function TaskDetailPage() {
         {/* Right sidebar */}
         <div className="space-y-4">
           {/* Status actions */}
-          <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
-            <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+          <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border-subtle)", borderRadius: "var(--radius-lg)", padding: 16 }}>
+            <h3 style={{ marginBottom: 12, fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>
               Acciones
             </h3>
             <div className="space-y-2">
@@ -372,7 +363,8 @@ export default function TaskDetailPage() {
                 <button
                   onClick={() => handleStatusChange("IN_PROGRESS")}
                   disabled={updateStatus.isPending}
-                  className="flex w-full items-center justify-center gap-1 rounded-lg bg-blue-600 px-3 py-2 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                  className="flex w-full items-center justify-center gap-1"
+                  style={{ padding: "8px 12px", borderRadius: "var(--radius-md)", background: "var(--info)", color: "#fff", fontSize: 12, fontWeight: 500, opacity: updateStatus.isPending ? 0.5 : 1 }}
                 >
                   <PlayCircle className="h-4 w-4" />
                   Iniciar tarea
@@ -383,7 +375,8 @@ export default function TaskDetailPage() {
                   <button
                     onClick={() => handleStatusChange("AWAITING_REVIEW")}
                     disabled={updateStatus.isPending}
-                    className="flex w-full items-center justify-center gap-1 rounded-lg bg-amber-600 px-3 py-2 text-xs font-medium text-white hover:bg-amber-700 disabled:opacity-50"
+                    className="flex w-full items-center justify-center gap-1"
+                    style={{ padding: "8px 12px", borderRadius: "var(--radius-md)", background: "var(--warning)", color: "#000", fontSize: 12, fontWeight: 500, opacity: updateStatus.isPending ? 0.5 : 1 }}
                   >
                     <Clock className="h-4 w-4" />
                     Enviar a revisión
@@ -391,7 +384,8 @@ export default function TaskDetailPage() {
                   <button
                     onClick={() => handleStatusChange("BLOCKED")}
                     disabled={updateStatus.isPending}
-                    className="flex w-full items-center justify-center gap-1 rounded-lg border border-red-200 px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
+                    className="flex w-full items-center justify-center gap-1"
+                    style={{ padding: "8px 12px", borderRadius: "var(--radius-md)", border: "1px solid rgba(248,113,113,0.3)", color: "var(--danger)", fontSize: 12, fontWeight: 500, opacity: updateStatus.isPending ? 0.5 : 1 }}
                   >
                     <XCircle className="h-4 w-4" />
                     Marcar bloqueada
@@ -402,7 +396,8 @@ export default function TaskDetailPage() {
                 <button
                   onClick={() => handleStatusChange("COMPLETED")}
                   disabled={updateStatus.isPending}
-                  className="flex w-full items-center justify-center gap-1 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+                  className="flex w-full items-center justify-center gap-1"
+                  style={{ padding: "8px 12px", borderRadius: "var(--radius-md)", background: "var(--success)", color: "#000", fontSize: 12, fontWeight: 500, opacity: updateStatus.isPending ? 0.5 : 1 }}
                 >
                   <CheckCircle2 className="h-4 w-4" />
                   Marcar completada
@@ -412,7 +407,8 @@ export default function TaskDetailPage() {
                 <button
                   onClick={() => handleStatusChange("IN_PROGRESS")}
                   disabled={updateStatus.isPending}
-                  className="flex w-full items-center justify-center gap-1 rounded-lg bg-blue-600 px-3 py-2 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                  className="flex w-full items-center justify-center gap-1"
+                  style={{ padding: "8px 12px", borderRadius: "var(--radius-md)", background: "var(--info)", color: "#fff", fontSize: 12, fontWeight: 500, opacity: updateStatus.isPending ? 0.5 : 1 }}
                 >
                   <PlayCircle className="h-4 w-4" />
                   Retomar tarea
@@ -422,48 +418,46 @@ export default function TaskDetailPage() {
           </div>
 
           {/* Details */}
-          <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
-            <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+          <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border-subtle)", borderRadius: "var(--radius-lg)", padding: 16 }}>
+            <h3 style={{ marginBottom: 12, fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>
               Detalles
             </h3>
-            <dl className="space-y-3 text-sm">
+            <dl className="space-y-3" style={{ fontSize: 14 }}>
               <div className="flex justify-between">
-                <dt className="text-zinc-500">Asignado a</dt>
-                <dd className="font-medium text-zinc-900 dark:text-white">
+                <dt style={{ color: "var(--text-muted)" }}>Asignado a</dt>
+                <dd style={{ fontWeight: 500, color: "var(--text-primary)" }}>
                   {task.assignedTo?.name ?? "Sin asignar"}
                 </dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-zinc-500">Creado por</dt>
-                <dd className="font-medium text-zinc-900 dark:text-white">
+                <dt style={{ color: "var(--text-muted)" }}>Creado por</dt>
+                <dd style={{ fontWeight: 500, color: "var(--text-primary)" }}>
                   {task.createdBy.name}
                 </dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-zinc-500">Área</dt>
-                <dd className="font-medium" style={{ color: task.area.color }}>
+                <dt style={{ color: "var(--text-muted)" }}>Área</dt>
+                <dd style={{ fontWeight: 500, color: task.area.color }}>
                   {task.area.name}
                 </dd>
               </div>
               {task.department && (
                 <div className="flex justify-between">
-                  <dt className="text-zinc-500">Departamento</dt>
-                  <dd className="font-medium text-zinc-900 dark:text-white">
+                  <dt style={{ color: "var(--text-muted)" }}>Departamento</dt>
+                  <dd style={{ fontWeight: 500, color: "var(--text-primary)" }}>
                     {task.department.name}
                   </dd>
                 </div>
               )}
               <div className="flex justify-between">
-                <dt className="text-zinc-500">Fecha límite</dt>
-                <dd className={cn("font-medium",
-                  due.isOverdue ? "text-red-600" : due.isUrgent ? "text-amber-600" : "text-zinc-900 dark:text-white"
-                )}>
+                <dt style={{ color: "var(--text-muted)" }}>Fecha límite</dt>
+                <dd style={{ fontWeight: 500, color: due.isOverdue ? "var(--danger)" : due.isUrgent ? "var(--warning)" : "var(--text-primary)" }}>
                   {due.text}
                 </dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-zinc-500">Creado</dt>
-                <dd className="text-zinc-700 dark:text-zinc-300">
+                <dt style={{ color: "var(--text-muted)" }}>Creado</dt>
+                <dd style={{ color: "var(--text-secondary)" }}>
                   {formatRelativeDate(task.createdAt)}
                 </dd>
               </div>
@@ -552,16 +546,16 @@ function getLogDescription(action: string, fromValue: string | null, toValue: st
 function TaskDetailSkeleton() {
   return (
     <div className="mx-auto max-w-4xl space-y-6">
-      <div className="h-8 w-48 animate-pulse rounded-lg bg-zinc-200 dark:bg-zinc-800" />
-      <div className="h-6 w-96 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
+      <div className="nexus-skeleton" style={{ width: 192, height: 32 }} />
+      <div className="nexus-skeleton" style={{ width: 384, height: 24 }} />
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
-          <div className="h-32 animate-pulse rounded-xl bg-zinc-200 dark:bg-zinc-800" />
-          <div className="h-64 animate-pulse rounded-xl bg-zinc-200 dark:bg-zinc-800" />
+          <div className="nexus-skeleton" style={{ height: 128, borderRadius: "var(--radius-lg)" }} />
+          <div className="nexus-skeleton" style={{ height: 256, borderRadius: "var(--radius-lg)" }} />
         </div>
         <div className="space-y-4">
-          <div className="h-48 animate-pulse rounded-xl bg-zinc-200 dark:bg-zinc-800" />
-          <div className="h-48 animate-pulse rounded-xl bg-zinc-200 dark:bg-zinc-800" />
+          <div className="nexus-skeleton" style={{ height: 192, borderRadius: "var(--radius-lg)" }} />
+          <div className="nexus-skeleton" style={{ height: 192, borderRadius: "var(--radius-lg)" }} />
         </div>
       </div>
     </div>

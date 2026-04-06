@@ -15,13 +15,13 @@ export default function DashboardLayout({
   const { sidebarCollapsed } = useUIStore();
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900">
+    <div style={{ minHeight: "100vh", background: "var(--bg-page)" }}>
       <Sidebar />
 
       <div
         className={cn(
           "flex min-h-screen flex-col transition-all duration-300",
-          sidebarCollapsed ? "lg:pl-16" : "lg:pl-60"
+          sidebarCollapsed ? "lg:pl-16" : "lg:pl-[220px]"
         )}
       >
         <Topbar />

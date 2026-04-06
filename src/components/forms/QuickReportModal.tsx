@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { trpc } from "@/lib/trpc-client";
 import { useUIStore } from "@/store/ui-store";
-import { cn } from "@/lib/utils";
 import {
   X,
   ChevronRight,
@@ -20,11 +19,11 @@ import {
 } from "lucide-react";
 
 const REPORT_TYPES = [
-  { value: "stock_shortage", label: "Falta de stock", icon: Package, color: "text-amber-500 bg-amber-50" },
-  { value: "damaged_equipment", label: "Equipo dañado", icon: Wrench, color: "text-red-500 bg-red-50" },
-  { value: "blocked_process", label: "Proceso bloqueado", icon: Ban, color: "text-orange-500 bg-orange-50" },
-  { value: "accident", label: "Accidente", icon: AlertTriangle, color: "text-red-600 bg-red-50" },
-  { value: "other", label: "Otro", icon: HelpCircle, color: "text-zinc-500 bg-zinc-50" },
+  { value: "stock_shortage", label: "Falta de stock", icon: Package, color: "var(--warning)", bg: "var(--warning-bg)" },
+  { value: "damaged_equipment", label: "Equipo dañado", icon: Wrench, color: "var(--danger)", bg: "var(--danger-bg)" },
+  { value: "blocked_process", label: "Proceso bloqueado", icon: Ban, color: "#fb923c", bg: "rgba(251,146,60,0.08)" },
+  { value: "accident", label: "Accidente", icon: AlertTriangle, color: "var(--danger)", bg: "var(--danger-bg)" },
+  { value: "other", label: "Otro", icon: HelpCircle, color: "var(--text-secondary)", bg: "rgba(144,144,168,0.08)" },
 ] as const;
 
 type ReportType = (typeof REPORT_TYPES)[number]["value"];
@@ -70,24 +69,40 @@ export function QuickReportModal() {
     <>
       {/* Overlay */}
       <div
-        className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+        className="fixed inset-0 z-50"
+        style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" }}
         onClick={handleClose}
       />
 
       {/* Modal */}
-      <div className="fixed inset-x-4 bottom-4 top-auto z-50 mx-auto max-w-lg rounded-2xl bg-white shadow-2xl dark:bg-zinc-950 lg:inset-auto lg:left-1/2 lg:top-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2">
+      <div
+        className="fixed inset-x-4 bottom-4 top-auto z-50 mx-auto max-w-lg lg:inset-auto lg:left-1/2 lg:top-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2"
+        style={{
+          background: "var(--bg-surface)",
+          border: "1px solid var(--border-default)",
+          borderRadius: "var(--radius-xl)",
+          boxShadow: "0 24px 64px rgba(0,0,0,0.5)",
+        }}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
+        <div
+          className="flex items-center justify-between px-5 py-4"
+          style={{ borderBottom: "1px solid var(--border-subtle)" }}
+        >
           <div>
-            <h2 className="text-base font-semibold text-zinc-900 dark:text-white">
+            <h2 style={{ fontSize: 16, fontWeight: 600, color: "var(--text-primary)" }}>
               Reportar problema
             </h2>
             {!submitted && (
-              <p className="text-xs text-zinc-500">Paso {step} de 3</p>
+              <p style={{ fontSize: 12, color: "var(--text-muted)" }}>Paso {step} de 3</p>
             )}
           </div>
-          <button onClick={handleClose} className="rounded-lg p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800">
-            <X className="h-5 w-5 text-zinc-500" />
+          <button
+            onClick={handleClose}
+            className="rounded-lg p-1"
+            style={{ color: "var(--text-muted)" }}
+          >
+            <X className="h-5 w-5" />
           </button>
         </div>
 
@@ -97,10 +112,13 @@ export function QuickReportModal() {
             {[1, 2, 3].map((s) => (
               <div
                 key={s}
-                className={cn(
-                  "h-1 flex-1 rounded-full transition-colors",
-                  s <= step ? "bg-indigo-600" : "bg-zinc-200 dark:bg-zinc-700"
-                )}
+                style={{
+                  height: 3,
+                  flex: 1,
+                  borderRadius: "100px",
+                  background: s <= step ? "#4f46e5" : "var(--bg-elevated)",
+                  transition: "background 0.2s",
+                }}
               />
             ))}
           </div>
@@ -142,30 +160,40 @@ export function QuickReportModal() {
 function Step1({ type, onSelect }: { type: ReportType | null; onSelect: (t: ReportType) => void }) {
   return (
     <div>
-      <h3 className="mb-3 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+      <h3 style={{ marginBottom: 12, fontSize: 14, fontWeight: 500, color: "var(--text-secondary)" }}>
         ¿Qué ocurrió?
       </h3>
-      <div className="space-y-2">
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {REPORT_TYPES.map((rt) => {
           const Icon = rt.icon;
+          const isSelected = type === rt.value;
           return (
             <button
               key={rt.value}
               onClick={() => onSelect(rt.value)}
-              className={cn(
-                "flex w-full items-center gap-3 rounded-xl border p-4 text-left transition-all hover:border-indigo-300 hover:shadow-sm",
-                type === rt.value
-                  ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-950/30"
-                  : "border-zinc-200 dark:border-zinc-700"
-              )}
+              className="flex w-full items-center gap-3 text-left"
+              style={{
+                padding: 16,
+                borderRadius: "var(--radius-lg)",
+                border: `1px solid ${isSelected ? "#818cf8" : "var(--border-default)"}`,
+                background: isSelected ? "rgba(99,102,241,0.08)" : "transparent",
+                transition: "all 0.15s ease",
+              }}
             >
-              <div className={cn("flex h-10 w-10 items-center justify-center rounded-lg", rt.color)}>
+              <div
+                className="flex h-10 w-10 items-center justify-center"
+                style={{
+                  borderRadius: "var(--radius-md)",
+                  background: rt.bg,
+                  color: rt.color,
+                }}
+              >
                 <Icon className="h-5 w-5" />
               </div>
-              <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+              <span style={{ fontSize: 14, fontWeight: 500, color: "var(--text-primary)" }}>
                 {rt.label}
               </span>
-              <ChevronRight className="ml-auto h-4 w-4 text-zinc-400" />
+              <ChevronRight className="ml-auto h-4 w-4" style={{ color: "var(--text-muted)" }} />
             </button>
           );
         })}
@@ -192,9 +220,9 @@ function Step2({
   onNext: () => void;
 }) {
   return (
-    <div className="space-y-4">
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        <label style={{ display: "block", marginBottom: 6, fontSize: 13, fontWeight: 500, color: "var(--text-secondary)" }}>
           Describe el problema
         </label>
         <textarea
@@ -202,20 +230,47 @@ function Step2({
           onChange={(e) => setDetails(e.target.value)}
           placeholder="Ej: Sin papel bond A4 para impresión..."
           rows={4}
-          className="w-full resize-none rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-zinc-700 dark:bg-zinc-900"
+          style={{
+            width: "100%",
+            resize: "none",
+            background: "var(--bg-elevated)",
+            border: "1px solid var(--border-default)",
+            borderRadius: "var(--radius-md)",
+            color: "var(--text-primary)",
+            padding: "10px 14px",
+            fontSize: 14,
+            outline: "none",
+            transition: "border-color 0.15s, box-shadow 0.15s",
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = "#818cf8";
+            e.currentTarget.style.boxShadow = "0 0 0 3px rgba(129,140,248,0.15)";
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = "var(--border-default)";
+            e.currentTarget.style.boxShadow = "none";
+          }}
         />
-        <p className="mt-1 text-[10px] text-zinc-400">
+        <p style={{ marginTop: 4, fontSize: 10, color: "var(--text-muted)" }}>
           Mínimo 10 caracteres ({details.length}/2000)
         </p>
       </div>
 
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        <label style={{ display: "block", marginBottom: 6, fontSize: 13, fontWeight: 500, color: "var(--text-secondary)" }}>
           Foto (opcional)
         </label>
         <button
           type="button"
-          className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-zinc-200 p-6 text-sm text-zinc-500 transition-colors hover:border-indigo-300 hover:text-indigo-600 dark:border-zinc-700"
+          className="flex w-full items-center justify-center gap-2"
+          style={{
+            border: "2px dashed var(--border-default)",
+            borderRadius: "var(--radius-md)",
+            padding: 24,
+            fontSize: 14,
+            color: "var(--text-muted)",
+            transition: "all 0.15s",
+          }}
         >
           <Camera className="h-5 w-5" />
           Tomar foto o seleccionar imagen
@@ -225,7 +280,15 @@ function Step2({
       <div className="flex gap-2">
         <button
           onClick={onBack}
-          className="flex items-center gap-1 rounded-lg border border-zinc-200 px-4 py-2.5 text-sm font-medium text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700"
+          className="flex items-center gap-1"
+          style={{
+            padding: "8px 16px",
+            borderRadius: "var(--radius-md)",
+            border: "1px solid var(--border-default)",
+            color: "var(--text-secondary)",
+            fontSize: 14,
+            fontWeight: 500,
+          }}
         >
           <ChevronLeft className="h-4 w-4" />
           Atrás
@@ -233,7 +296,16 @@ function Step2({
         <button
           onClick={onNext}
           disabled={details.trim().length < 10}
-          className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+          className="flex flex-1 items-center justify-center gap-1"
+          style={{
+            padding: "8px 16px",
+            borderRadius: "var(--radius-md)",
+            background: "#4f46e5",
+            color: "white",
+            fontSize: 14,
+            fontWeight: 500,
+            opacity: details.trim().length < 10 ? 0.5 : 1,
+          }}
         >
           Continuar
           <ChevronRight className="h-4 w-4" />
@@ -261,25 +333,35 @@ function Step3({
   isLoading: boolean;
 }) {
   return (
-    <div className="space-y-4">
-      <h3 className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <h3 style={{ fontSize: 14, fontWeight: 500, color: "var(--text-secondary)" }}>
         Confirmar reporte
       </h3>
 
-      <div className="space-y-3 rounded-xl border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-900">
-        <div className="flex items-center gap-2 text-sm">
-          <span className="text-zinc-500">Tipo:</span>
-          <span className="font-medium text-zinc-800 dark:text-zinc-200">
+      <div
+        style={{
+          background: "var(--bg-elevated)",
+          border: "1px solid var(--border-subtle)",
+          borderRadius: "var(--radius-md)",
+          padding: 16,
+          display: "flex",
+          flexDirection: "column",
+          gap: 12,
+        }}
+      >
+        <div className="flex items-center gap-2" style={{ fontSize: 14 }}>
+          <span style={{ color: "var(--text-muted)" }}>Tipo:</span>
+          <span style={{ fontWeight: 500, color: "var(--text-primary)" }}>
             {selectedType?.label}
           </span>
         </div>
-        <div className="text-sm">
-          <span className="text-zinc-500">Detalle:</span>
-          <p className="mt-1 text-zinc-800 dark:text-zinc-200">{details}</p>
+        <div style={{ fontSize: 14 }}>
+          <span style={{ color: "var(--text-muted)" }}>Detalle:</span>
+          <p style={{ marginTop: 4, color: "var(--text-primary)" }}>{details}</p>
         </div>
         {photoUrl && (
-          <div className="text-sm">
-            <span className="text-zinc-500">📷 Foto adjunta</span>
+          <div style={{ fontSize: 14, color: "var(--text-muted)" }}>
+            📷 Foto adjunta
           </div>
         )}
       </div>
@@ -288,7 +370,16 @@ function Step3({
         <button
           onClick={onBack}
           disabled={isLoading}
-          className="flex items-center gap-1 rounded-lg border border-zinc-200 px-4 py-2.5 text-sm font-medium text-zinc-600 hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700"
+          className="flex items-center gap-1"
+          style={{
+            padding: "8px 16px",
+            borderRadius: "var(--radius-md)",
+            border: "1px solid var(--border-default)",
+            color: "var(--text-secondary)",
+            fontSize: 14,
+            fontWeight: 500,
+            opacity: isLoading ? 0.5 : 1,
+          }}
         >
           <ChevronLeft className="h-4 w-4" />
           Atrás
@@ -296,7 +387,16 @@ function Step3({
         <button
           onClick={onSubmit}
           disabled={isLoading}
-          className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+          className="flex flex-1 items-center justify-center gap-1"
+          style={{
+            padding: "8px 16px",
+            borderRadius: "var(--radius-md)",
+            background: "#4f46e5",
+            color: "white",
+            fontSize: 14,
+            fontWeight: 500,
+            opacity: isLoading ? 0.5 : 1,
+          }}
         >
           {isLoading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -317,18 +417,34 @@ function Step3({
 function SuccessState({ onClose }: { onClose: () => void }) {
   return (
     <div className="flex flex-col items-center py-6 text-center">
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
-        <CheckCircle2 className="h-8 w-8 text-emerald-600" />
+      <div
+        className="flex items-center justify-center"
+        style={{
+          width: 64,
+          height: 64,
+          borderRadius: "100%",
+          background: "var(--success-bg)",
+        }}
+      >
+        <CheckCircle2 size={32} style={{ color: "var(--success)" }} />
       </div>
-      <h3 className="mt-4 text-base font-semibold text-zinc-900 dark:text-white">
+      <h3 style={{ marginTop: 16, fontSize: 16, fontWeight: 600, color: "var(--text-primary)" }}>
         ¡Reporte enviado!
       </h3>
-      <p className="mt-1 text-sm text-zinc-500">
+      <p style={{ marginTop: 4, fontSize: 14, color: "var(--text-muted)" }}>
         Tu reporte fue enviado. Te notificaremos cuando sea atendido.
       </p>
       <button
         onClick={onClose}
-        className="mt-6 rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-indigo-700"
+        style={{
+          marginTop: 24,
+          padding: "10px 24px",
+          borderRadius: "var(--radius-md)",
+          background: "#4f46e5",
+          color: "white",
+          fontSize: 14,
+          fontWeight: 500,
+        }}
       >
         Cerrar
       </button>

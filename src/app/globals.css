@@ -1,26 +1,150 @@
 @import "tailwindcss";
 
+/* ═══════════════════════════════════════════════════════
+   NEXUS Design System — "Dark Refined" Theme
+   Inspired by Linear.app + Notion + Vercel Dashboard
+   ═══════════════════════════════════════════════════════ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Backgrounds — 4 layered surfaces */
+  --bg-page:       #0a0a0f;
+  --bg-surface:    #111118;
+  --bg-elevated:   #1a1a24;
+  --bg-overlay:    #22222e;
+
+  /* Borders */
+  --border-subtle:  rgba(255,255,255,0.06);
+  --border-default: rgba(255,255,255,0.10);
+  --border-strong:  rgba(255,255,255,0.18);
+
+  /* Text */
+  --text-primary:   #f0f0f5;
+  --text-secondary: #9090a8;
+  --text-muted:     #5c5c7a;
+  --text-disabled:  #3a3a50;
+
+  /* Area accent colors */
+  --area-admin:     #818cf8;
+  --area-tech:      #38bdf8;
+  --area-comercial: #34d399;
+  --area-logistica: #fb923c;
+  --area-produccion:#f87171;
+
+  /* Semantic colors */
+  --success:     #4ade80;
+  --success-bg:  rgba(74,222,128,0.08);
+  --warning:     #fbbf24;
+  --warning-bg:  rgba(251,191,36,0.08);
+  --danger:      #f87171;
+  --danger-bg:   rgba(248,113,113,0.08);
+  --info:        #60a5fa;
+  --info-bg:     rgba(96,165,250,0.08);
+
+  /* Priority colors */
+  --priority-low:      #6b7280;
+  --priority-medium:   #60a5fa;
+  --priority-high:     #fbbf24;
+  --priority-critical: #f87171;
+
+  /* Status colors */
+  --status-pending:    #9090a8;
+  --status-progress:   #60a5fa;
+  --status-blocked:    #f87171;
+  --status-review:     #fbbf24;
+  --status-approved:   #4ade80;
+  --status-completed:  #4ade80;
+  --status-cancelled:  #3a3a50;
+  --status-rejected:   #f87171;
+
+  /* Radii */
+  --radius-sm:  6px;
+  --radius-md:  10px;
+  --radius-lg:  14px;
+  --radius-xl:  18px;
+
+  /* Primary accent */
+  --accent-primary: #4f46e5;
+  --accent-primary-hover: #4338ca;
+  --accent-secondary: #818cf8;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: var(--bg-page);
+  --color-foreground: var(--text-primary);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* ─── Base ─────────────────────────────────────────── */
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+}
+
+/* ─── Skeleton animation ───────────────────────────── */
+
+@keyframes nexus-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.15; }
+}
+
+.nexus-skeleton {
+  background: var(--bg-elevated);
+  animation: nexus-pulse 1.5s ease-in-out infinite;
+  border-radius: var(--radius-md);
+}
+
+/* ─── Notification dot pulse ───────────────────────── */
+
+@keyframes notif-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.7; }
+}
+
+.notif-dot-pulse {
+  animation: notif-pulse 2s ease-in-out infinite;
+}
+
+/* ─── Priority critical pulse ──────────────────────── */
+
+@keyframes priority-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.priority-critical-pulse {
+  animation: priority-pulse 2s ease-in-out infinite;
+}
+
+/* ─── Scrollbar styling ────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
+}
+
+/* ─── Selection ────────────────────────────────────── */
+
+::selection {
+  background: rgba(79, 70, 229, 0.3);
+  color: var(--text-primary);
+}
+
+/* ─── Focus rings ──────────────────────────────────── */
+
+*:focus-visible {
+  outline: 2px solid var(--accent-secondary);
+  outline-offset: 2px;
 }

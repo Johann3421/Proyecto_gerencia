@@ -3,7 +3,7 @@
 import { useSession, signOut } from "next-auth/react";
 import { useUIStore } from "@/store/ui-store";
 import { trpc } from "@/lib/trpc-client";
-import { Bell, Menu, LogOut, User } from "lucide-react";
+import { Bell, Menu, LogOut } from "lucide-react";
 import Link from "next/link";
 
 export function Topbar() {
@@ -15,21 +15,34 @@ export function Topbar() {
     refetchInterval: 30000,
   });
 
+  const hasNotifs = unreadCount !== undefined && unreadCount > 0;
+
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-zinc-200 bg-white/80 px-4 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-950/80 lg:px-6">
-      {/* Left: hamburger + breadcrumb */}
+    <header
+      className="sticky top-0 z-30 flex items-center justify-between px-4 lg:px-6"
+      style={{
+        height: 56,
+        background: "var(--bg-page)",
+        borderBottom: "1px solid var(--border-subtle)",
+      }}
+    >
+      {/* Left: hamburger + mobile logo */}
       <div className="flex items-center gap-3">
         <button
           onClick={toggleSidebar}
-          className="rounded-md p-2 hover:bg-zinc-100 lg:hidden dark:hover:bg-zinc-800"
+          className="rounded-md p-2 lg:hidden"
+          style={{ color: "var(--text-secondary)" }}
           aria-label="Toggle menu"
         >
-          <Menu className="h-5 w-5 text-zinc-600" />
+          <Menu className="h-5 w-5" />
         </button>
 
         {/* Mobile logo */}
         <Link href="/" className="flex items-center gap-2 lg:hidden">
-          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-indigo-600 text-white text-xs font-bold">
+          <div
+            className="flex h-7 w-7 items-center justify-center text-white text-xs font-bold"
+            style={{ background: "#4f46e5", borderRadius: "var(--radius-md)" }}
+          >
             N
           </div>
         </Link>
@@ -40,14 +53,27 @@ export function Topbar() {
         {/* Notification bell */}
         <button
           onClick={() => setNotificationDrawerOpen(true)}
-          className="relative rounded-md p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-          aria-label="Notificaciones"
+          className="relative rounded-md p-2"
+          style={{ color: "var(--text-secondary)", transition: "color 0.15s" }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = "var(--text-primary)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-secondary)"; }}
+          aria-label={hasNotifs ? `${unreadCount} notificaciones sin leer` : "Notificaciones"}
+          title={hasNotifs ? `${unreadCount} notificaciones sin leer` : "Notificaciones"}
         >
-          <Bell className="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
-          {unreadCount !== undefined && unreadCount > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
-              {unreadCount > 99 ? "99+" : unreadCount}
-            </span>
+          <Bell className="h-5 w-5" />
+          {hasNotifs && (
+            <span
+              className="notif-dot-pulse"
+              style={{
+                position: "absolute",
+                top: 6,
+                right: 6,
+                width: 6,
+                height: 6,
+                borderRadius: "50%",
+                background: "var(--danger)",
+              }}
+            />
           )}
         </button>
 
@@ -56,16 +82,34 @@ export function Topbar() {
           <div className="flex items-center gap-2">
             <Link
               href="/settings/profile"
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 text-sm font-bold hover:ring-2 hover:ring-indigo-300"
+              className="flex items-center justify-center text-white text-xs font-bold"
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: "100%",
+                background: "#4f46e5",
+                border: "1px solid rgba(255,255,255,0.15)",
+                transition: "box-shadow 0.15s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = "0 0 0 2px rgba(129,140,248,0.5)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = "none";
+              }}
+              title={session.user.name ?? "Perfil"}
             >
               {session.user.name?.charAt(0).toUpperCase()}
             </Link>
             <button
               onClick={() => signOut({ callbackUrl: "/auth/login" })}
-              className="hidden rounded-md p-2 hover:bg-zinc-100 sm:block dark:hover:bg-zinc-800"
+              className="hidden sm:block rounded-md p-2"
+              style={{ color: "var(--text-muted)", transition: "color 0.15s" }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = "var(--text-secondary)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-muted)"; }}
               aria-label="Cerrar sesión"
             >
-              <LogOut className="h-4 w-4 text-zinc-500" />
+              <LogOut className="h-4 w-4" />
             </button>
           </div>
         )}

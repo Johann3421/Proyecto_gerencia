@@ -47,19 +47,26 @@ export function BottomNav() {
   if (!items) return null;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-zinc-200 bg-white py-1 lg:hidden dark:border-zinc-800 dark:bg-zinc-950">
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around py-1 lg:hidden"
+      style={{
+        background: "var(--bg-surface)",
+        borderTop: "1px solid var(--border-subtle)",
+      }}
+    >
       {items.map((item) => {
         const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
         return (
           <Link
             key={item.href}
             href={item.href}
-            className={cn(
-              "flex flex-col items-center gap-0.5 px-3 py-2 text-[10px] font-medium transition-colors",
-              isActive
-                ? "text-indigo-600 dark:text-indigo-400"
-                : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
-            )}
+            className="flex flex-col items-center gap-0.5 px-3 py-2"
+            style={{
+              fontSize: 10,
+              fontWeight: 500,
+              color: isActive ? "#818cf8" : "var(--text-muted)",
+              transition: "color 0.15s",
+            }}
           >
             {item.icon}
             <span>{item.label}</span>

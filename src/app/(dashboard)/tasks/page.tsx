@@ -14,7 +14,7 @@ import {
   Search,
   X,
   ChevronDown,
-  Loader2,
+  ListTodo,
 } from "lucide-react";
 import Link from "next/link";
 import { STATUS_CONFIG, PRIORITY_CONFIG } from "@/types";
@@ -72,33 +72,40 @@ export default function TasksPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-zinc-900 dark:text-white">
+          <h1 style={{ fontSize: 18, fontWeight: 600, color: "var(--text-primary)" }}>
             Tareas
           </h1>
-          <p className="text-sm text-zinc-500">
+          <p style={{ fontSize: 14, color: "var(--text-muted)" }}>
             {total} tareas en total
           </p>
         </div>
         <div className="flex items-center gap-2">
           {/* View toggle */}
-          <div className="flex rounded-lg border border-zinc-200 dark:border-zinc-700">
+          <div
+            className="flex"
+            style={{
+              border: "1px solid var(--border-default)",
+              borderRadius: "var(--radius-md)",
+              overflow: "hidden",
+            }}
+          >
             <button
               onClick={() => setKanbanView(false)}
-              className={`rounded-l-lg p-2 text-sm ${
-                !kanbanView
-                  ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400"
-                  : "text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800"
-              }`}
+              className="p-2"
+              style={{
+                background: !kanbanView ? "rgba(99,102,241,0.12)" : "transparent",
+                color: !kanbanView ? "#818cf8" : "var(--text-muted)",
+              }}
             >
               <List className="h-4 w-4" />
             </button>
             <button
               onClick={() => setKanbanView(true)}
-              className={`rounded-r-lg p-2 text-sm ${
-                kanbanView
-                  ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400"
-                  : "text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800"
-              }`}
+              className="p-2"
+              style={{
+                background: kanbanView ? "rgba(99,102,241,0.12)" : "transparent",
+                color: kanbanView ? "#818cf8" : "var(--text-muted)",
+              }}
             >
               <LayoutGrid className="h-4 w-4" />
             </button>
@@ -107,7 +114,15 @@ export default function TasksPage() {
           {canCreate && (
             <Link
               href="/tasks/new"
-              className="flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
+              className="flex items-center gap-1.5"
+              style={{
+                padding: "8px 16px",
+                borderRadius: "var(--radius-md)",
+                background: "#4f46e5",
+                color: "white",
+                fontSize: 14,
+                fontWeight: 500,
+              }}
             >
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline">Nueva tarea</span>
@@ -120,7 +135,7 @@ export default function TasksPage() {
       <div className="space-y-3">
         <div className="flex gap-2">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: "var(--text-muted)" }} />
             <input
               type="text"
               value={search}
@@ -129,21 +144,58 @@ export default function TasksPage() {
                 setPage(1);
               }}
               placeholder="Buscar tareas..."
-              className="h-10 w-full rounded-xl border border-zinc-200 bg-white pl-9 pr-4 text-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-zinc-700 dark:bg-zinc-900"
+              style={{
+                height: 40,
+                width: "100%",
+                paddingLeft: 36,
+                paddingRight: 16,
+                background: "var(--bg-elevated)",
+                border: "1px solid var(--border-default)",
+                borderRadius: "var(--radius-md)",
+                color: "var(--text-primary)",
+                fontSize: 14,
+                outline: "none",
+                transition: "border-color 0.15s, box-shadow 0.15s",
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = "#818cf8";
+                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(129,140,248,0.15)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "var(--border-default)";
+                e.currentTarget.style.boxShadow = "none";
+              }}
             />
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`relative flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm transition-colors ${
-              showFilters || activeFilters > 0
-                ? "border-indigo-200 bg-indigo-50 text-indigo-600 dark:border-indigo-800 dark:bg-indigo-950 dark:text-indigo-400"
-                : "border-zinc-200 text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
-            }`}
+            className="relative flex items-center gap-1.5"
+            style={{
+              padding: "8px 12px",
+              borderRadius: "var(--radius-md)",
+              border: `1px solid ${showFilters || activeFilters > 0 ? "#818cf8" : "var(--border-default)"}`,
+              background: showFilters || activeFilters > 0 ? "rgba(99,102,241,0.08)" : "transparent",
+              color: showFilters || activeFilters > 0 ? "#818cf8" : "var(--text-secondary)",
+              fontSize: 14,
+            }}
           >
             <Filter className="h-4 w-4" />
             <span className="hidden sm:inline">Filtros</span>
             {activeFilters > 0 && (
-              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-bold text-white">
+              <span
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: 16,
+                  height: 16,
+                  borderRadius: "100%",
+                  background: "#4f46e5",
+                  color: "white",
+                  fontSize: 10,
+                  fontWeight: 700,
+                }}
+              >
                 {activeFilters}
               </span>
             )}
@@ -151,7 +203,15 @@ export default function TasksPage() {
         </div>
 
         {showFilters && (
-          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-zinc-200 bg-white p-3 dark:border-zinc-700 dark:bg-zinc-900">
+          <div
+            className="flex flex-wrap items-center gap-2"
+            style={{
+              background: "var(--bg-surface)",
+              border: "1px solid var(--border-subtle)",
+              borderRadius: "var(--radius-md)",
+              padding: 12,
+            }}
+          >
             {/* Status */}
             <div className="relative">
               <select
@@ -160,7 +220,18 @@ export default function TasksPage() {
                   setStatusFilter(e.target.value as TaskStatus | "");
                   setPage(1);
                 }}
-                className="h-9 appearance-none rounded-lg border border-zinc-200 bg-white px-3 pr-8 text-xs outline-none focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-800"
+                style={{
+                  height: 36,
+                  paddingLeft: 12,
+                  paddingRight: 32,
+                  background: "var(--bg-elevated)",
+                  border: "1px solid var(--border-default)",
+                  borderRadius: "var(--radius-md)",
+                  color: "var(--text-primary)",
+                  fontSize: 12,
+                  outline: "none",
+                  appearance: "none",
+                }}
               >
                 <option value="">Todos los estados</option>
                 {STATUS_OPTIONS.map((s) => (
@@ -169,7 +240,7 @@ export default function TasksPage() {
                   </option>
                 ))}
               </select>
-              <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400" />
+              <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2" style={{ color: "var(--text-muted)" }} />
             </div>
 
             {/* Priority */}
@@ -180,7 +251,18 @@ export default function TasksPage() {
                   setPriorityFilter(e.target.value as Priority | "");
                   setPage(1);
                 }}
-                className="h-9 appearance-none rounded-lg border border-zinc-200 bg-white px-3 pr-8 text-xs outline-none focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-800"
+                style={{
+                  height: 36,
+                  paddingLeft: 12,
+                  paddingRight: 32,
+                  background: "var(--bg-elevated)",
+                  border: "1px solid var(--border-default)",
+                  borderRadius: "var(--radius-md)",
+                  color: "var(--text-primary)",
+                  fontSize: 12,
+                  outline: "none",
+                  appearance: "none",
+                }}
               >
                 <option value="">Todas las prioridades</option>
                 {PRIORITY_OPTIONS.map((p) => (
@@ -189,13 +271,14 @@ export default function TasksPage() {
                   </option>
                 ))}
               </select>
-              <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400" />
+              <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2" style={{ color: "var(--text-muted)" }} />
             </div>
 
             {activeFilters > 0 && (
               <button
                 onClick={clearFilters}
-                className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
+                className="flex items-center gap-1"
+                style={{ padding: "4px 8px", borderRadius: "var(--radius-sm)", fontSize: 12, color: "var(--danger)" }}
               >
                 <X className="h-3 w-3" />
                 Limpiar
@@ -207,18 +290,37 @@ export default function TasksPage() {
 
       {/* Content */}
       {isLoading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+        <div className="space-y-3">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="nexus-skeleton" style={{ height: 80, borderRadius: "var(--radius-lg)" }} />
+          ))}
         </div>
       ) : tasks.length === 0 ? (
-        <div className="rounded-2xl border border-zinc-200 bg-white p-12 text-center dark:border-zinc-800 dark:bg-zinc-950">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
-            <List className="h-6 w-6 text-zinc-400" />
+        <div
+          className="flex flex-col items-center justify-center text-center"
+          style={{
+            background: "var(--bg-surface)",
+            border: "1px solid var(--border-subtle)",
+            borderRadius: "var(--radius-lg)",
+            padding: 48,
+          }}
+        >
+          <div
+            className="flex items-center justify-center"
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: "100%",
+              background: "var(--bg-elevated)",
+              marginBottom: 12,
+            }}
+          >
+            <ListTodo size={24} style={{ color: "var(--text-muted)" }} />
           </div>
-          <p className="font-medium text-zinc-600 dark:text-zinc-400">
+          <p style={{ fontSize: 14, fontWeight: 500, color: "var(--text-secondary)" }}>
             No se encontraron tareas
           </p>
-          <p className="mt-1 text-sm text-zinc-400">
+          <p style={{ marginTop: 4, fontSize: 13, color: "var(--text-muted)" }}>
             {activeFilters > 0
               ? "Intenta con otros filtros"
               : "Las tareas aparecerán aquí cuando se creen"}
@@ -240,17 +342,31 @@ export default function TasksPage() {
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="rounded-lg border border-zinc-200 px-3 py-1.5 text-sm disabled:opacity-40 dark:border-zinc-700"
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: "var(--radius-md)",
+                  border: "1px solid var(--border-default)",
+                  color: "var(--text-secondary)",
+                  fontSize: 14,
+                  opacity: page === 1 ? 0.4 : 1,
+                }}
               >
                 Anterior
               </button>
-              <span className="text-sm text-zinc-500">
+              <span style={{ fontSize: 14, color: "var(--text-muted)" }}>
                 {page} de {totalPages}
               </span>
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="rounded-lg border border-zinc-200 px-3 py-1.5 text-sm disabled:opacity-40 dark:border-zinc-700"
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: "var(--radius-md)",
+                  border: "1px solid var(--border-default)",
+                  color: "var(--text-secondary)",
+                  fontSize: 14,
+                  opacity: page === totalPages ? 0.4 : 1,
+                }}
               >
                 Siguiente
               </button>

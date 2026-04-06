@@ -1,14 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { cn, formatDueDate } from "@/lib/utils";
-import { STATUS_CONFIG, PRIORITY_CONFIG, type TaskWithRelations } from "@/types";
+import { formatDueDate } from "@/lib/utils";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { PriorityBadge } from "@/components/ui/PriorityBadge";
+import type { TaskWithRelations } from "@/types";
 import {
   Calendar,
   MessageSquare,
   Paperclip,
   GitBranch,
-  AlertTriangle,
 } from "lucide-react";
 
 interface TaskCardProps {
@@ -17,75 +18,89 @@ interface TaskCardProps {
   onStatusChange?: (taskId: string, newStatus: string) => void;
 }
 
-export function TaskCard({ task, compact = false, onStatusChange }: TaskCardProps) {
-  const statusCfg = STATUS_CONFIG[task.status];
-  const priorityCfg = PRIORITY_CONFIG[task.priority];
+export function TaskCard({ task, compact = false }: TaskCardProps) {
   const due = formatDueDate(task.dueDate);
+  const isBlockedOrCriticalOverdue = task.status === "BLOCKED" || (task.priority === "CRITICAL" && due.isOverdue);
 
   return (
     <Link
       href={`/tasks/${task.id}`}
-      className={cn(
-        "group block rounded-xl border bg-white p-4 shadow-sm transition-all hover:shadow-md dark:bg-zinc-950",
-        task.status === "BLOCKED" && "border-l-4 border-l-red-500",
-        task.status !== "BLOCKED" && "border-zinc-200 dark:border-zinc-800"
-      )}
+      className="group block"
+      style={{
+        background: isBlockedOrCriticalOverdue ? "rgba(248,113,113,0.04)" : "var(--bg-surface)",
+        border: "1px solid var(--border-subtle)",
+        borderLeft: isBlockedOrCriticalOverdue ? "3px solid var(--danger)" : "1px solid var(--border-subtle)",
+        borderRadius: "var(--radius-lg)",
+        padding: compact ? "12px 16px" : "16px 20px",
+        transition: "all 0.2s ease",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = "var(--border-default)";
+        e.currentTarget.style.transform = "translateY(-1px)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = "var(--border-subtle)";
+        if (isBlockedOrCriticalOverdue) e.currentTarget.style.borderLeftColor = "var(--danger)";
+        e.currentTarget.style.transform = "translateY(0)";
+      }}
     >
-      {/* Top: Priority badge + status */}
+      {/* Top: Priority badge + area badge + status */}
       <div className="mb-2 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          {/* Priority dot */}
-          <span
-            className={cn(
-              "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold",
-              priorityCfg.bgColor,
-              priorityCfg.color,
-              task.priority === "CRITICAL" && "animate-pulse"
-            )}
-          >
-            {task.priority === "CRITICAL" && <AlertTriangle className="h-3 w-3" />}
-            {priorityCfg.label}
-          </span>
+          <PriorityBadge priority={task.priority} />
 
           {/* Area badge */}
           <span
-            className="rounded-full px-2 py-0.5 text-[10px] font-medium text-white"
-            style={{ backgroundColor: task.area.color }}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              padding: "3px 8px",
+              borderRadius: "100px",
+              fontSize: 10,
+              fontWeight: 500,
+              color: task.area.color,
+              backgroundColor: `${task.area.color}1F`,
+            }}
           >
             {task.area.name}
           </span>
         </div>
 
-        {/* Status */}
-        <span
-          className={cn(
-            "rounded-full px-2 py-0.5 text-[10px] font-medium",
-            statusCfg.bgColor,
-            statusCfg.color
-          )}
-        >
-          {statusCfg.label}
-        </span>
+        {/* Status badge */}
+        <StatusBadge status={task.status} />
       </div>
 
       {/* Title */}
-      <h3 className="text-sm font-semibold text-zinc-900 group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400">
+      <h3
+        style={{
+          fontSize: 14,
+          fontWeight: 600,
+          color: "var(--text-primary)",
+          transition: "color 0.15s",
+        }}
+        className="group-hover:text-indigo-400"
+      >
         {task.title}
       </h3>
 
       {!compact && task.description && (
-        <p className="mt-1 line-clamp-2 text-xs text-zinc-500 dark:text-zinc-400">
+        <p
+          className="line-clamp-2"
+          style={{
+            marginTop: 4,
+            fontSize: 12,
+            color: "var(--text-muted)",
+          }}
+        >
           {task.description}
         </p>
       )}
 
-      {/* Subtask progress bar */}
+      {/* Subtask progress */}
       {task._count.subtasks > 0 && (
-        <div className="mt-2">
-          <div className="flex items-center gap-2 text-[10px] text-zinc-500">
-            <GitBranch className="h-3 w-3" />
-            <span>{task._count.subtasks} sub-tareas</span>
-          </div>
+        <div className="mt-2 flex items-center gap-2" style={{ color: "var(--text-muted)", fontSize: 10 }}>
+          <GitBranch className="h-3 w-3" />
+          <span>{task._count.subtasks} sub-tareas</span>
         </div>
       )}
 
@@ -96,31 +111,39 @@ export function TaskCard({ task, compact = false, onStatusChange }: TaskCardProp
           {task.assignedTo ? (
             <div className="flex items-center gap-1.5">
               <div
-                className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-100 text-[10px] font-bold text-indigo-600"
+                className="flex items-center justify-center text-white font-bold"
+                style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: "100%",
+                  background: "#4f46e5",
+                  fontSize: 10,
+                }}
                 title={task.assignedTo.name}
               >
                 {task.assignedTo.name.charAt(0).toUpperCase()}
               </div>
               {!compact && (
-                <span className="text-xs text-zinc-600 dark:text-zinc-400">
+                <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>
                   {task.assignedTo.name.split(" ")[0]}
                 </span>
               )}
             </div>
           ) : (
-            <span className="text-[10px] text-zinc-400">Sin asignar</span>
+            <span style={{ fontSize: 10, color: "var(--text-muted)" }}>Sin asignar</span>
           )}
         </div>
 
         {/* Meta: due date, comments, evidence */}
-        <div className="flex items-center gap-3 text-zinc-400">
+        <div className="flex items-center gap-3" style={{ color: "var(--text-muted)" }}>
           {task.dueDate && (
             <span
-              className={cn(
-                "flex items-center gap-1 text-[10px]",
-                due.isOverdue && "font-semibold text-red-500",
-                due.isUrgent && !due.isOverdue && "text-amber-500"
-              )}
+              className="flex items-center gap-1"
+              style={{
+                fontSize: 10,
+                fontWeight: due.isOverdue ? 600 : 400,
+                color: due.isOverdue ? "var(--danger)" : due.isUrgent ? "var(--warning)" : "var(--text-muted)",
+              }}
             >
               <Calendar className="h-3 w-3" />
               {due.text}
@@ -128,14 +151,14 @@ export function TaskCard({ task, compact = false, onStatusChange }: TaskCardProp
           )}
 
           {task._count.comments > 0 && (
-            <span className="flex items-center gap-0.5 text-[10px]">
+            <span className="flex items-center gap-0.5" style={{ fontSize: 10 }}>
               <MessageSquare className="h-3 w-3" />
               {task._count.comments}
             </span>
           )}
 
           {task._count.evidence > 0 && (
-            <span className="flex items-center gap-0.5 text-[10px]">
+            <span className="flex items-center gap-0.5" style={{ fontSize: 10 }}>
               <Paperclip className="h-3 w-3" />
               {task._count.evidence}
             </span>
@@ -149,8 +172,14 @@ export function TaskCard({ task, compact = false, onStatusChange }: TaskCardProp
           {task.tags.map((tag) => (
             <span
               key={tag.id}
-              className="rounded px-1.5 py-0.5 text-[9px] font-medium text-white"
-              style={{ backgroundColor: tag.color }}
+              style={{
+                padding: "2px 6px",
+                borderRadius: "var(--radius-sm)",
+                fontSize: 9,
+                fontWeight: 500,
+                color: "white",
+                backgroundColor: tag.color,
+              }}
             >
               {tag.name}
             </span>

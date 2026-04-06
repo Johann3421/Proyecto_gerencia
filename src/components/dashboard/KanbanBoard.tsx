@@ -17,8 +17,7 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { cn } from "@/lib/utils";
-import { STATUS_CONFIG, type TaskWithRelations, type TaskStatus } from "@/types";
+import type { TaskWithRelations, TaskStatus } from "@/types";
 import { TaskCard } from "@/components/dashboard/TaskCard";
 
 const KANBAN_COLUMNS: TaskStatus[] = [
@@ -28,6 +27,23 @@ const KANBAN_COLUMNS: TaskStatus[] = [
   "AWAITING_REVIEW",
   "COMPLETED",
 ];
+
+const COLUMN_CONFIG: Record<TaskStatus, {
+  label: string;
+  dotColor: string;
+  borderTopColor: string;
+  badgeBg: string;
+  badgeColor: string;
+}> = {
+  PENDING:         { label: "Pendiente",    dotColor: "var(--status-pending)",   borderTopColor: "var(--status-pending)",   badgeBg: "rgba(144,144,168,0.10)", badgeColor: "var(--status-pending)" },
+  IN_PROGRESS:     { label: "En progreso",  dotColor: "var(--status-progress)",  borderTopColor: "var(--status-progress)",  badgeBg: "rgba(96,165,250,0.10)",  badgeColor: "var(--status-progress)" },
+  BLOCKED:         { label: "Bloqueado",    dotColor: "var(--status-blocked)",   borderTopColor: "var(--danger)",           badgeBg: "var(--danger-bg)",       badgeColor: "var(--danger)" },
+  AWAITING_REVIEW: { label: "En revisión",  dotColor: "var(--status-review)",    borderTopColor: "var(--warning)",          badgeBg: "var(--warning-bg)",      badgeColor: "var(--warning)" },
+  APPROVED:        { label: "Aprobado",     dotColor: "var(--status-approved)",  borderTopColor: "var(--success)",          badgeBg: "var(--success-bg)",      badgeColor: "var(--success)" },
+  COMPLETED:       { label: "Completado",   dotColor: "var(--status-completed)", borderTopColor: "var(--success)",          badgeBg: "var(--success-bg)",      badgeColor: "var(--success)" },
+  REJECTED:        { label: "Rechazado",    dotColor: "var(--status-rejected)",  borderTopColor: "var(--danger)",           badgeBg: "var(--danger-bg)",       badgeColor: "var(--danger)" },
+  CANCELLED:       { label: "Cancelado",    dotColor: "var(--status-cancelled)", borderTopColor: "var(--text-disabled)",    badgeBg: "rgba(58,58,80,0.30)",    badgeColor: "var(--status-cancelled)" },
+};
 
 interface KanbanBoardProps {
   tasks: TaskWithRelations[];
@@ -58,35 +74,52 @@ function KanbanColumn({
   status: TaskStatus;
   tasks: TaskWithRelations[];
 }) {
-  const config = STATUS_CONFIG[status];
+  const config = COLUMN_CONFIG[status];
 
   return (
     <div
-      className={cn(
-        "flex w-72 flex-shrink-0 flex-col rounded-xl border bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50",
-        status === "BLOCKED" && "border-l-4 border-l-red-500",
-        status !== "BLOCKED" && "border-zinc-200"
-      )}
+      className="flex w-72 flex-shrink-0 flex-col"
+      style={{
+        background: "var(--bg-surface)",
+        border: "1px solid var(--border-subtle)",
+        borderTop: `3px solid ${config.borderTopColor}`,
+        borderRadius: "var(--radius-lg)",
+      }}
     >
       {/* Column header */}
-      <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
+      <div
+        className="flex items-center justify-between px-4 py-3"
+        style={{ borderBottom: "1px solid var(--border-subtle)" }}
+      >
         <div className="flex items-center gap-2">
-          <span className={cn("h-2.5 w-2.5 rounded-full", config.bgColor.replace("bg-", "bg-"))} 
-                style={{ backgroundColor: config.color.replace("text-", "").includes("gray") ? "#9ca3af" : 
-                         config.color.includes("blue") ? "#2563eb" : 
-                         config.color.includes("red") ? "#dc2626" :
-                         config.color.includes("amber") ? "#d97706" :
-                         config.color.includes("green") ? "#16a34a" :
-                         config.color.includes("emerald") ? "#059669" : "#6b7280" }} />
-          <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+          <span
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: "100%",
+              backgroundColor: config.dotColor,
+              flexShrink: 0,
+            }}
+          />
+          <h3 style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>
             {config.label}
           </h3>
         </div>
-        <span className={cn(
-          "flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold",
-          config.bgColor,
-          config.color
-        )}>
+        <span
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            minWidth: 20,
+            height: 20,
+            padding: "0 6px",
+            borderRadius: "100px",
+            fontSize: 10,
+            fontWeight: 700,
+            color: config.badgeColor,
+            backgroundColor: config.badgeBg,
+          }}
+        >
           {tasks.length}
         </span>
       </div>
@@ -95,8 +128,14 @@ function KanbanColumn({
       <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
         <div className="flex-1 space-y-2 overflow-y-auto p-3" style={{ maxHeight: "calc(100vh - 220px)" }}>
           {tasks.length === 0 && (
-            <div className="flex items-center justify-center rounded-lg border-2 border-dashed border-zinc-200 p-6 dark:border-zinc-700">
-              <p className="text-xs text-zinc-400">Sin tareas</p>
+            <div
+              className="flex items-center justify-center p-6"
+              style={{
+                border: "2px dashed var(--border-default)",
+                borderRadius: "var(--radius-md)",
+              }}
+            >
+              <p style={{ fontSize: 12, color: "var(--text-muted)" }}>Sin tareas</p>
             </div>
           )}
           {tasks.map((task) => (
@@ -165,7 +204,11 @@ export function KanbanBoard({ tasks, onStatusChange }: KanbanBoardProps) {
 
       <DragOverlay>
         {activeTask && (
-          <div className="rotate-2 scale-105 opacity-80">
+          <div style={{
+            transform: "rotate(1deg)",
+            opacity: 0.95,
+            boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+          }}>
             <TaskCard task={activeTask} compact />
           </div>
         )}

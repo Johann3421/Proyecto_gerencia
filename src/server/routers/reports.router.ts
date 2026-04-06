@@ -51,7 +51,7 @@ export const reportsRouter = router({
         ctx.db.task.count({
           where: {
             ...where,
-            status: { notIn: ["COMPLETED", "CANCELLED"] },
+            status: { notIn: ["COMPLETED", "APPROVED", "CANCELLED"] },
             dueDate: { lt: new Date() },
           },
         }),
@@ -63,7 +63,7 @@ export const reportsRouter = router({
         completed,
         overdue,
         inProgress,
-        completionRate: total > 0 ? Math.round((completed / total) * 100) : 0,
+        completionRate: total > 0 ? Math.min(Math.round((completed / total) * 100), 100) : 0,
       };
     }),
 
@@ -84,7 +84,7 @@ export const reportsRouter = router({
                 where: {
                   ...scopeFilter,
                   deletedAt: null,
-                  status: { notIn: ["COMPLETED", "CANCELLED"] },
+                  status: { notIn: ["COMPLETED", "APPROVED", "CANCELLED"] },
                   dueDate: { lt: new Date() },
                 },
               },

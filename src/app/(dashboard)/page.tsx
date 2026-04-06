@@ -3,7 +3,6 @@
 import { useSession } from "next-auth/react";
 import { trpc } from "@/lib/trpc-client";
 import { useUIStore } from "@/store/ui-store";
-import { cn, formatDueDate } from "@/lib/utils";
 import { TaskCard } from "@/components/dashboard/TaskCard";
 import { QuickReportModal } from "@/components/forms/QuickReportModal";
 import type { RoleType } from "@prisma/client";
@@ -19,6 +18,8 @@ import {
   FileText,
   Activity,
   BarChart3,
+  ShieldCheck,
+  GridIcon,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -62,38 +63,66 @@ function OperarioDashboard() {
   return (
     <div className="space-y-6">
       {/* Hero: Mis tareas de hoy */}
-      <div className="rounded-2xl bg-gradient-to-br from-indigo-600 to-indigo-800 p-6 text-white shadow-lg">
+      <div
+        style={{
+          background: "linear-gradient(135deg, #4f46e5, #6366f1, #4338ca)",
+          borderRadius: "var(--radius-xl)",
+          padding: 24,
+          color: "white",
+        }}
+      >
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold">Mis tareas de hoy</h1>
-            <p className="mt-1 text-sm text-indigo-200">
+            <h1 style={{ fontSize: 20, fontWeight: 700 }}>Mis tareas de hoy</h1>
+            <p style={{ marginTop: 4, fontSize: 14, color: "rgba(255,255,255,0.7)" }}>
               {totalActive > 0
                 ? `${totalActive} tarea${totalActive > 1 ? "s" : ""} pendiente${totalActive > 1 ? "s" : ""}`
                 : "Todo en orden 🎯 — No hay tareas pendientes"}
             </p>
           </div>
-          <div className="flex items-center gap-2 rounded-xl bg-white/20 px-4 py-2 backdrop-blur-sm">
-            <Flame className="h-5 w-5 text-orange-300" />
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              background: "rgba(255,255,255,0.15)",
+              borderRadius: "var(--radius-lg)",
+              padding: "8px 16px",
+              backdropFilter: "blur(8px)",
+            }}
+          >
+            <Flame className="h-5 w-5" style={{ color: "#fb923c" }} />
             <div>
-              <p className="text-[10px] font-medium text-indigo-200">Racha</p>
-              <p className="text-lg font-bold">3 días</p>
+              <p style={{ fontSize: 10, fontWeight: 500, color: "rgba(255,255,255,0.6)" }}>Racha</p>
+              <p style={{ fontSize: 18, fontWeight: 700 }}>3 días</p>
             </div>
           </div>
         </div>
 
         {/* Progress bar */}
         {totalActive > 0 && (
-          <div className="mt-4">
-            <div className="flex items-center justify-between text-xs text-indigo-200">
+          <div style={{ marginTop: 16 }}>
+            <div className="flex items-center justify-between" style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>
               <span>Progreso del día</span>
               <span>
                 {completedToday}/{completedToday + totalActive} completadas
               </span>
             </div>
-            <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-white/20">
+            <div
+              style={{
+                marginTop: 6,
+                height: 6,
+                borderRadius: "100px",
+                background: "rgba(255,255,255,0.2)",
+                overflow: "hidden",
+              }}
+            >
               <div
-                className="h-full rounded-full bg-white transition-all"
                 style={{
+                  height: "100%",
+                  borderRadius: "100px",
+                  background: "white",
+                  transition: "width 0.6s ease",
                   width: `${totalActive + completedToday > 0 ? (completedToday / (completedToday + totalActive)) * 100 : 0}%`,
                 }}
               />
@@ -104,23 +133,21 @@ function OperarioDashboard() {
 
       {/* Task list */}
       <div>
-        <h2 className="mb-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+        <h2 style={{ marginBottom: 12, fontSize: 14, fontWeight: 600, color: "var(--text-secondary)" }}>
           Tareas prioritarias
         </h2>
         {isLoading ? (
           <div className="space-y-3">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-24 animate-pulse rounded-xl bg-zinc-200 dark:bg-zinc-800" />
+              <div key={i} className="nexus-skeleton" style={{ height: 96, borderRadius: "var(--radius-lg)" }} />
             ))}
           </div>
         ) : todayTasks.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-zinc-200 p-8 text-center dark:border-zinc-700">
-            <CheckCircle2 className="h-10 w-10 text-emerald-400" />
-            <p className="mt-2 text-sm font-medium text-zinc-600 dark:text-zinc-400">
-              Todo en orden 🎯
-            </p>
-            <p className="text-xs text-zinc-400">No hay tareas pendientes</p>
-          </div>
+          <EmptyState
+            icon={<CheckCircle2 size={48} style={{ color: "var(--success)" }} />}
+            title="Todo al día"
+            subtitle="No tienes tareas pendientes por ahora."
+          />
         ) : (
           <div className="space-y-3">
             {todayTasks.map((task) => (
@@ -133,7 +160,16 @@ function OperarioDashboard() {
       {/* FAB */}
       <button
         onClick={() => setQuickReportModalOpen(true)}
-        className="fixed bottom-20 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg transition-transform hover:scale-110 active:scale-95 lg:bottom-6"
+        className="fixed bottom-20 right-4 z-40 flex items-center justify-center lg:bottom-6"
+        style={{
+          width: 56,
+          height: 56,
+          borderRadius: "100%",
+          background: "#4f46e5",
+          color: "white",
+          boxShadow: "0 8px 24px rgba(79,70,229,0.4)",
+          transition: "transform 0.15s",
+        }}
         aria-label="Reportar problema"
       >
         <Plus className="h-6 w-6" />
@@ -160,53 +196,50 @@ function SupervisorDashboard() {
     (t) =>
       t.dueDate &&
       new Date(t.dueDate) < new Date() &&
-      !["COMPLETED", "CANCELLED"].includes(t.status)
+      !["COMPLETED", "APPROVED", "CANCELLED"].includes(t.status)
   );
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-bold text-zinc-900 dark:text-white">
+      <h1 style={{ fontSize: 18, fontWeight: 600, color: "var(--text-primary)" }}>
         Panel de Supervisor
       </h1>
 
       {/* KPI cards */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <KPICard
-          icon={<Clock className="h-5 w-5 text-amber-500" />}
+        <MetricCard
+          icon={<Clock size={20} style={{ color: "var(--warning)" }} />}
           label="En revisión"
           value={awaitingReview.length}
-          color="amber"
           urgent={awaitingReview.length > 0}
         />
-        <KPICard
-          icon={<AlertTriangle className="h-5 w-5 text-red-500" />}
+        <MetricCard
+          icon={<AlertTriangle size={20} style={{ color: "var(--danger)" }} />}
           label="Vencidas"
           value={overdue.length}
-          color="red"
           urgent={overdue.length > 0}
         />
-        <KPICard
-          icon={<CheckCircle2 className="h-5 w-5 text-emerald-500" />}
+        <MetricCard
+          icon={<CheckCircle2 size={20} style={{ color: "var(--success)" }} />}
           label="Completadas"
           value={completionData?.completed ?? 0}
-          color="emerald"
         />
-        <KPICard
-          icon={<TrendingUp className="h-5 w-5 text-indigo-500" />}
+        <MetricCard
+          icon={<TrendingUp size={20} style={{ color: "var(--info)" }} />}
           label="Tasa completitud"
           value={`${completionData?.completionRate ?? 0}%`}
-          color="indigo"
+          rateValue={completionData?.completionRate}
         />
       </div>
 
       {/* Approvals pending */}
-      {awaitingReview.length > 0 && (
+      {awaitingReview.length > 0 ? (
         <div>
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+            <h2 style={{ fontSize: 14, fontWeight: 600, color: "var(--warning)" }}>
               ⚡ Aprobaciones pendientes
             </h2>
-            <Link href="/approvals" className="text-xs text-indigo-600 hover:underline">
+            <Link href="/approvals" style={{ fontSize: 12, color: "#818cf8" }} className="hover:underline">
               Ver todas
             </Link>
           </div>
@@ -216,15 +249,21 @@ function SupervisorDashboard() {
             ))}
           </div>
         </div>
+      ) : (
+        <EmptyState
+          icon={<ShieldCheck size={48} style={{ color: "var(--success)" }} />}
+          title="Sin pendientes"
+          subtitle="No hay solicitudes esperando tu revisión."
+        />
       )}
 
       {/* Recent tasks */}
       <div>
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+          <h2 style={{ fontSize: 14, fontWeight: 600, color: "var(--text-secondary)" }}>
             Tareas del equipo
           </h2>
-          <Link href="/tasks" className="text-xs text-indigo-600 hover:underline">
+          <Link href="/tasks" style={{ fontSize: 12, color: "#818cf8" }} className="hover:underline">
             Ver todas
           </Link>
         </div>
@@ -241,9 +280,7 @@ function SupervisorDashboard() {
 // ─── ADMIN_AREA Dashboard ────────────────────────────
 
 function AdminAreaDashboard() {
-  const { data: session } = useSession();
   const { data: completionData } = trpc.reports.taskCompletionRate.useQuery({});
-  const { data: overdueData } = trpc.reports.overdueByArea.useQuery();
   const { data: tasksData } = trpc.tasks.list.useQuery({ page: 1, limit: 20 });
 
   const tasks = tasksData?.tasks ?? [];
@@ -256,55 +293,79 @@ function AdminAreaDashboard() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-zinc-900 dark:text-white">
+        <h1 style={{ fontSize: 18, fontWeight: 600, color: "var(--text-primary)" }}>
           Panel de Área
         </h1>
-        <button className="flex items-center gap-1 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-medium text-white hover:bg-indigo-700">
+        <button
+          className="flex items-center gap-1"
+          style={{
+            padding: "8px 16px",
+            borderRadius: "var(--radius-md)",
+            background: "#4f46e5",
+            color: "white",
+            fontSize: 13,
+            fontWeight: 500,
+          }}
+        >
           <FileText className="h-4 w-4" />
           Exportar reporte
         </button>
       </div>
 
       {/* Health gauge */}
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
-        <h2 className="mb-4 text-sm font-semibold text-zinc-600 dark:text-zinc-400">
+      <div
+        style={{
+          background: "var(--bg-surface)",
+          border: "1px solid var(--border-subtle)",
+          borderRadius: "var(--radius-lg)",
+          padding: 24,
+        }}
+      >
+        <h2 style={{ marginBottom: 16, fontSize: 14, fontWeight: 600, color: "var(--text-secondary)" }}>
           Salud del área
         </h2>
         <div className="flex items-center gap-6">
           <div className="relative flex h-28 w-28 items-center justify-center">
             <svg className="h-28 w-28 -rotate-90" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="42" fill="none" stroke="#e5e7eb" strokeWidth="8" />
+              <circle cx="50" cy="50" r="42" fill="none" stroke="var(--bg-elevated)" strokeWidth="8" />
               <circle
                 cx="50"
                 cy="50"
                 r="42"
                 fill="none"
-                stroke={rate >= 75 ? "#10b981" : rate >= 50 ? "#f59e0b" : "#ef4444"}
+                stroke={rate >= 71 ? "var(--success)" : rate >= 41 ? "var(--warning)" : "var(--danger)"}
                 strokeWidth="8"
-                strokeDasharray={`${rate * 2.64} 264`}
+                strokeDasharray={`${Math.min(rate, 100) * 2.64} 264`}
                 strokeLinecap="round"
               />
             </svg>
-            <span className="absolute text-2xl font-bold text-zinc-900 dark:text-white">
+            <span
+              className="absolute"
+              style={{
+                fontSize: 24,
+                fontWeight: 700,
+                color: rate >= 71 ? "var(--success)" : rate >= 41 ? "var(--warning)" : "var(--danger)",
+              }}
+            >
               {rate}%
             </span>
           </div>
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm">
-              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-              <span className="text-zinc-600 dark:text-zinc-400">
+            <div className="flex items-center gap-2" style={{ fontSize: 14 }}>
+              <CheckCircle2 size={16} style={{ color: "var(--success)" }} />
+              <span style={{ color: "var(--text-secondary)" }}>
                 {completionData?.completed ?? 0} completadas
               </span>
             </div>
-            <div className="flex items-center gap-2 text-sm">
-              <Activity className="h-4 w-4 text-blue-500" />
-              <span className="text-zinc-600 dark:text-zinc-400">
+            <div className="flex items-center gap-2" style={{ fontSize: 14 }}>
+              <Activity size={16} style={{ color: "var(--info)" }} />
+              <span style={{ color: "var(--text-secondary)" }}>
                 {completionData?.inProgress ?? 0} en progreso
               </span>
             </div>
-            <div className="flex items-center gap-2 text-sm">
-              <AlertTriangle className="h-4 w-4 text-red-500" />
-              <span className="text-zinc-600 dark:text-zinc-400">
+            <div className="flex items-center gap-2" style={{ fontSize: 14 }}>
+              <AlertTriangle size={16} style={{ color: "var(--danger)" }} />
+              <span style={{ color: "var(--text-secondary)" }}>
                 {completionData?.overdue ?? 0} vencidas
               </span>
             </div>
@@ -315,7 +376,7 @@ function AdminAreaDashboard() {
       {/* Top 3 problems */}
       {problems.length > 0 && (
         <div>
-          <h2 className="mb-3 text-sm font-semibold text-red-600">
+          <h2 style={{ marginBottom: 12, fontSize: 14, fontWeight: 600, color: "var(--danger)" }}>
             🚨 Problemas activos
           </h2>
           <div className="space-y-2">
@@ -326,21 +387,48 @@ function AdminAreaDashboard() {
         </div>
       )}
 
-      {/* Week comparison placeholder */}
-      <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
-        <h2 className="mb-4 text-sm font-semibold text-zinc-600 dark:text-zinc-400">
+      {/* Week comparison */}
+      <div
+        style={{
+          background: "var(--bg-surface)",
+          border: "1px solid var(--border-subtle)",
+          borderRadius: "var(--radius-lg)",
+          padding: 24,
+        }}
+      >
+        <h2 style={{ marginBottom: 16, fontSize: 14, fontWeight: 600, color: "var(--text-secondary)" }}>
           Comparativa semanal
         </h2>
         <div className="grid grid-cols-2 gap-4">
-          <div className="rounded-lg bg-zinc-50 p-4 text-center dark:bg-zinc-900">
-            <p className="text-2xl font-bold text-zinc-900 dark:text-white">
+          <div
+            className="text-center"
+            style={{
+              background: "var(--bg-elevated)",
+              borderRadius: "var(--radius-md)",
+              padding: 16,
+            }}
+          >
+            <p style={{ fontSize: 24, fontWeight: 700, color: "var(--text-primary)" }}>
               {completionData?.total ?? 0}
             </p>
-            <p className="text-xs text-zinc-500">Tareas esta semana</p>
+            <p style={{ fontSize: 12, color: "var(--text-muted)" }}>Tareas esta semana</p>
           </div>
-          <div className="rounded-lg bg-zinc-50 p-4 text-center dark:bg-zinc-900">
-            <p className="text-2xl font-bold text-emerald-600">{rate}%</p>
-            <p className="text-xs text-zinc-500">Tasa de completitud</p>
+          <div
+            className="text-center"
+            style={{
+              background: "var(--bg-elevated)",
+              borderRadius: "var(--radius-md)",
+              padding: 16,
+            }}
+          >
+            <p style={{
+              fontSize: 24,
+              fontWeight: 700,
+              color: rate >= 71 ? "var(--success)" : rate >= 41 ? "var(--warning)" : "var(--danger)",
+            }}>
+              {rate}%
+            </p>
+            <p style={{ fontSize: 12, color: "var(--text-muted)" }}>Tasa de completitud</p>
           </div>
         </div>
       </div>
@@ -356,17 +444,27 @@ function SuperAdminDashboard() {
   const { data: tasksData } = trpc.tasks.list.useQuery({ page: 1, limit: 10 });
 
   const areas = overdueData ?? [];
+  const rate = completionData?.completionRate ?? 0;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-zinc-900 dark:text-white">
+        <h1 style={{ fontSize: 18, fontWeight: 600, color: "var(--text-primary)" }}>
           Panel Global
         </h1>
         <div className="flex gap-2">
           <Link
             href="/team"
-            className="flex items-center gap-1 rounded-lg border border-zinc-200 px-3 py-2 text-xs font-medium hover:bg-zinc-50 dark:border-zinc-700"
+            className="flex items-center gap-1"
+            style={{
+              padding: "8px 12px",
+              borderRadius: "var(--radius-md)",
+              border: "1px solid var(--border-default)",
+              fontSize: 13,
+              fontWeight: 500,
+              color: "var(--text-secondary)",
+              transition: "all 0.15s",
+            }}
           >
             <Users className="h-4 w-4" />
             Crear usuario
@@ -376,36 +474,33 @@ function SuperAdminDashboard() {
 
       {/* Global KPIs */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <KPICard
-          icon={<ListTodo className="h-5 w-5 text-indigo-500" />}
+        <MetricCard
+          icon={<GridIcon size={20} style={{ color: "var(--info)" }} />}
           label="Total tareas"
           value={completionData?.total ?? 0}
-          color="indigo"
         />
-        <KPICard
-          icon={<CheckCircle2 className="h-5 w-5 text-emerald-500" />}
+        <MetricCard
+          icon={<CheckCircle2 size={20} style={{ color: "var(--success)" }} />}
           label="Completadas"
           value={completionData?.completed ?? 0}
-          color="emerald"
         />
-        <KPICard
-          icon={<AlertTriangle className="h-5 w-5 text-red-500" />}
+        <MetricCard
+          icon={<AlertTriangle size={20} style={{ color: "var(--danger)" }} />}
           label="Vencidas"
           value={completionData?.overdue ?? 0}
-          color="red"
           urgent={(completionData?.overdue ?? 0) > 0}
         />
-        <KPICard
-          icon={<TrendingUp className="h-5 w-5 text-blue-500" />}
+        <MetricCard
+          icon={<TrendingUp size={20} style={{ color: "var(--info)" }} />}
           label="Tasa global"
-          value={`${completionData?.completionRate ?? 0}%`}
-          color="blue"
+          value={`${rate}%`}
+          rateValue={rate}
         />
       </div>
 
       {/* Area health grid */}
       <div>
-        <h2 className="mb-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+        <h2 style={{ marginBottom: 12, fontSize: 14, fontWeight: 600, color: "var(--text-secondary)" }}>
           Salud por área
         </h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
@@ -413,30 +508,40 @@ function SuperAdminDashboard() {
             <Link
               key={area.areaId}
               href={`/areas/${area.areaId}`}
-              className="rounded-xl border border-zinc-200 bg-white p-4 transition-shadow hover:shadow-md dark:border-zinc-800 dark:bg-zinc-950"
+              style={{
+                display: "block",
+                background: "var(--bg-surface)",
+                borderLeft: `3px solid ${area.color}`,
+                borderRadius: "var(--radius-md)",
+                padding: "12px 16px",
+                transition: "all 0.2s ease",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-1px)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
             >
               <div className="flex items-center gap-2">
-                <div
-                  className="h-3 w-3 rounded-full"
-                  style={{ backgroundColor: area.color }}
+                <span
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: "100%",
+                    background: area.color,
+                    flexShrink: 0,
+                  }}
                 />
-                <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">
+                <h3 style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>
                   {area.name}
                 </h3>
               </div>
-              <div className="mt-3 flex items-center justify-between">
-                <span className="text-xs text-zinc-500">Vencidas</span>
+              <div style={{ marginTop: 8 }}>
                 <span
-                  className={cn(
-                    "rounded-full px-2 py-0.5 text-xs font-bold",
-                    area.overdueCount === 0
-                      ? "bg-emerald-100 text-emerald-600"
-                      : area.overdueCount <= 2
-                        ? "bg-amber-100 text-amber-600"
-                        : "bg-red-100 text-red-600"
-                  )}
+                  style={{
+                    fontSize: 12,
+                    color: area.overdueCount > 0 ? "var(--danger)" : "var(--text-muted)",
+                    fontWeight: area.overdueCount > 0 ? 600 : 400,
+                  }}
                 >
-                  {area.overdueCount}
+                  {area.overdueCount} vencida{area.overdueCount !== 1 ? "s" : ""}
                 </span>
               </div>
             </Link>
@@ -446,14 +551,22 @@ function SuperAdminDashboard() {
 
       {/* Recent activity */}
       <div>
-        <h2 className="mb-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+        <h2 style={{ marginBottom: 12, fontSize: 14, fontWeight: 600, color: "var(--text-secondary)" }}>
           Actividad reciente
         </h2>
-        <div className="space-y-2">
-          {(tasksData?.tasks ?? []).slice(0, 5).map((task) => (
-            <TaskCard key={task.id} task={task} compact />
-          ))}
-        </div>
+        {(tasksData?.tasks ?? []).length === 0 ? (
+          <EmptyState
+            icon={<Activity size={48} style={{ color: "var(--info)" }} />}
+            title="Sin actividad reciente"
+            subtitle="Las acciones del equipo aparecerán aquí."
+          />
+        ) : (
+          <div className="space-y-2">
+            {(tasksData?.tasks ?? []).slice(0, 5).map((task) => (
+              <TaskCard key={task.id} task={task} compact />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -465,16 +578,26 @@ function AuditorDashboard() {
   const { data: completionData } = trpc.reports.taskCompletionRate.useQuery({});
   const { data: overdueData } = trpc.reports.overdueByArea.useQuery();
 
+  const rate = completionData?.completionRate ?? 0;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-zinc-900 dark:text-white">
+        <h1 style={{ fontSize: 18, fontWeight: 600, color: "var(--text-primary)" }}>
           Panel de Auditoría
         </h1>
         <div className="flex gap-2">
           <Link
             href="/reports"
-            className="flex items-center gap-1 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-medium text-white hover:bg-indigo-700"
+            className="flex items-center gap-1"
+            style={{
+              padding: "8px 16px",
+              borderRadius: "var(--radius-md)",
+              background: "#4f46e5",
+              color: "white",
+              fontSize: 13,
+              fontWeight: 500,
+            }}
           >
             <BarChart3 className="h-4 w-4" />
             Reportes completos
@@ -484,53 +607,71 @@ function AuditorDashboard() {
 
       {/* Summary */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <KPICard
-          icon={<ListTodo className="h-5 w-5 text-indigo-500" />}
+        <MetricCard
+          icon={<ListTodo size={20} style={{ color: "var(--info)" }} />}
           label="Total tareas"
           value={completionData?.total ?? 0}
-          color="indigo"
         />
-        <KPICard
-          icon={<CheckCircle2 className="h-5 w-5 text-emerald-500" />}
+        <MetricCard
+          icon={<CheckCircle2 size={20} style={{ color: "var(--success)" }} />}
           label="Completadas"
           value={completionData?.completed ?? 0}
-          color="emerald"
         />
-        <KPICard
-          icon={<AlertTriangle className="h-5 w-5 text-red-500" />}
+        <MetricCard
+          icon={<AlertTriangle size={20} style={{ color: "var(--danger)" }} />}
           label="Vencidas"
           value={completionData?.overdue ?? 0}
-          color="red"
+          urgent={(completionData?.overdue ?? 0) > 0}
         />
-        <KPICard
-          icon={<TrendingUp className="h-5 w-5 text-blue-500" />}
+        <MetricCard
+          icon={<TrendingUp size={20} style={{ color: "var(--info)" }} />}
           label="Completitud"
-          value={`${completionData?.completionRate ?? 0}%`}
-          color="blue"
+          value={`${rate}%`}
+          rateValue={rate}
         />
       </div>
 
       {/* Overdue by area table */}
-      <div className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
-        <div className="border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
-          <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+      <div
+        style={{
+          background: "var(--bg-surface)",
+          border: "1px solid var(--border-subtle)",
+          borderRadius: "var(--radius-lg)",
+          overflow: "hidden",
+        }}
+      >
+        <div style={{ borderBottom: "1px solid var(--border-subtle)", padding: "12px 16px" }}>
+          <h2 style={{ fontSize: 14, fontWeight: 600, color: "var(--text-secondary)" }}>
             Tareas vencidas por área
           </h2>
         </div>
-        <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
-          {(overdueData ?? []).map((area) => (
-            <div key={area.areaId} className="flex items-center justify-between px-4 py-3">
+        <div>
+          {(overdueData ?? []).map((area, i) => (
+            <div
+              key={area.areaId}
+              className="flex items-center justify-between"
+              style={{
+                padding: "12px 16px",
+                borderBottom: i < (overdueData?.length ?? 0) - 1 ? "1px solid var(--border-subtle)" : "none",
+              }}
+            >
               <div className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-full" style={{ backgroundColor: area.color }} />
-                <span className="text-sm text-zinc-700 dark:text-zinc-300">{area.name}</span>
+                <span style={{ width: 10, height: 10, borderRadius: "100%", background: area.color }} />
+                <span style={{ fontSize: 14, color: "var(--text-secondary)" }}>{area.name}</span>
               </div>
               <span
-                className={cn(
-                  "rounded-full px-2.5 py-0.5 text-xs font-bold",
-                  area.overdueCount === 0
-                    ? "bg-emerald-100 text-emerald-600"
-                    : "bg-red-100 text-red-600"
-                )}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minWidth: 28,
+                  padding: "2px 8px",
+                  borderRadius: "100px",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: area.overdueCount === 0 ? "var(--success)" : "var(--danger)",
+                  background: area.overdueCount === 0 ? "var(--success-bg)" : "var(--danger-bg)",
+                }}
               >
                 {area.overdueCount}
               </span>
@@ -542,53 +683,104 @@ function AuditorDashboard() {
   );
 }
 
-// ─── Reusable KPI Card ───────────────────────────────
+// ─── Reusable MetricCard ─────────────────────────────
 
-function KPICard({
+function MetricCard({
   icon,
   label,
   value,
-  color,
   urgent,
+  rateValue,
 }: {
   icon: React.ReactNode;
   label: string;
   value: number | string;
-  color: string;
   urgent?: boolean;
+  rateValue?: number;
 }) {
+  // Dynamic color for rate
+  let valueColor = "var(--text-primary)";
+  if (rateValue !== undefined) {
+    if (rateValue <= 40) valueColor = "var(--danger)";
+    else if (rateValue <= 70) valueColor = "var(--warning)";
+    else valueColor = "var(--success)";
+  }
+  if (urgent) valueColor = "var(--danger)";
+
   return (
     <div
-      className={cn(
-        "rounded-xl border bg-white p-4 dark:bg-zinc-950",
-        urgent
-          ? "border-red-200 dark:border-red-900"
-          : "border-zinc-200 dark:border-zinc-800"
-      )}
+      style={{
+        background: urgent ? "var(--danger-bg)" : "var(--bg-surface)",
+        border: `1px solid ${urgent ? "rgba(248,113,113,0.20)" : "var(--border-subtle)"}`,
+        borderRadius: "var(--radius-lg)",
+        padding: 16,
+      }}
     >
       <div className="flex items-center gap-2">
         {icon}
-        <span className="text-xs text-zinc-500">{label}</span>
+        <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{label}</span>
       </div>
-      <p className="mt-2 text-2xl font-bold text-zinc-900 dark:text-white">{value}</p>
+      <p
+        style={{
+          marginTop: 8,
+          fontSize: 28,
+          fontWeight: 700,
+          color: valueColor,
+          lineHeight: 1,
+        }}
+      >
+        {value}
+      </p>
     </div>
   );
 }
 
-// ─── Loading skeleton ────────────────────────────────
+// ─── Empty State ─────────────────────────────────────
+
+function EmptyState({
+  icon,
+  title,
+  subtitle,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  subtitle: string;
+}) {
+  return (
+    <div
+      className="flex flex-col items-center justify-center text-center"
+      style={{
+        background: "var(--bg-surface)",
+        border: "1px solid var(--border-subtle)",
+        borderRadius: "var(--radius-lg)",
+        padding: "40px 24px",
+      }}
+    >
+      {icon}
+      <p style={{ marginTop: 12, fontSize: 15, fontWeight: 600, color: "var(--text-primary)" }}>
+        {title}
+      </p>
+      <p style={{ marginTop: 4, fontSize: 13, color: "var(--text-muted)" }}>
+        {subtitle}
+      </p>
+    </div>
+  );
+}
+
+// ─── Loading Skeleton ────────────────────────────────
 
 function DashboardSkeleton() {
   return (
     <div className="space-y-6">
-      <div className="h-40 animate-pulse rounded-2xl bg-zinc-200 dark:bg-zinc-800" />
+      <div className="nexus-skeleton" style={{ height: 160, borderRadius: "var(--radius-xl)" }} />
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-24 animate-pulse rounded-xl bg-zinc-200 dark:bg-zinc-800" />
+          <div key={i} className="nexus-skeleton" style={{ height: 96, borderRadius: "var(--radius-lg)" }} />
         ))}
       </div>
       <div className="space-y-3">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-20 animate-pulse rounded-xl bg-zinc-200 dark:bg-zinc-800" />
+          <div key={i} className="nexus-skeleton" style={{ height: 80, borderRadius: "var(--radius-lg)" }} />
         ))}
       </div>
     </div>
